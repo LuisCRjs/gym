@@ -1,0 +1,65 @@
+<html lang="es">
+    <link href="style.css" rel="stylesheet" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gym log</title>
+</head>
+<body>
+    <h1>Gym Logs</h1>
+    <input id="ejercicio" placeholder="Ejercicio">
+    <input id="reps" type="number" placeholder="Reps">
+    <input id="peso" type="number" placeholder="Peso (Kg)">
+    <button id="guardar">Guardar Serie</button>
+    <ul id="lista"></ul>
+<script>
+    const inputEjercicio = document.getElementById('ejercicio');
+    const inputReps = document.getElementById('reps');
+    const inputPeso = document.getElementById('peso');
+    const boton = document.getElementById("guardar");
+    const lista = document.getElementById('lista');
+    const CLAVE = 'series';
+
+    const series = JSON.parse(localStorage.getItem(CLAVE)) || [];
+    boton.addEventListener('click', function () {
+        
+        const serie = {
+            ejercicio: inputEjercicio.value,
+            reps: Number(inputReps.value),
+            peso: Number(inputPeso.value),
+        };
+
+        series.push(serie);
+        localStorage.setItem(CLAVE, JSON.stringify(series))
+        mostrarSeries();
+    });
+
+    function mostrarSeries(){
+        lista.innerHTML = '';
+
+        for (const serie of series) {
+            const item = document.createElement('li');
+            item.textContent = serie.ejercicio + ': ' + serie.peso + ' kg x ' + serie.reps;
+            const botonBorrar = document.createElement('button')
+            botonBorrar.textContent = 'Borrar';
+            item.appendChild(botonBorrar)
+
+            botonBorrar.addEventListener('click', function () {
+                const posicion = series.indexOf(serie);
+                series.splice(posicion, 1);
+                guardarSeries();
+                mostrarSeries();
+            });
+            lista.appendChild(item)
+
+        }
+    }
+
+    function guardarSeries() {
+        localStorage.setItem(CLAVE, JSON.stringify(series));
+    }
+    mostrarSeries();
+
+</script>
+</body>
+</html>
