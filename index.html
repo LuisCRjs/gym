@@ -7,25 +7,23 @@
 </head>
 <body>
     <h1>Gym Logs</h1>
+    <input id="nuevoEjercicio" placeholder="Nuevo ejercicio">
+    <button id="agregarEjercicio">Agregar ejercicio</button>
     <select id="ejercicio"></select>
     <input id="reps" type="number" placeholder="Reps">
     <input id="peso" type="number" placeholder="Peso (Kg)">
     <button id="guardar">Guardar Serie</button>
     <ul id="lista"></ul>
 <script>
+    const inputNuevoEjercicio = document.getElementById('nuevoEjercicio');
+    const botonAgregar = document.getElementById('agregarEjercicio');
     const inputEjercicio = document.getElementById('ejercicio');
-    const ejercicios = ['Press banca', 'Sentadilla', 'Peso muerto' , 'Dominadas'];
     const inputReps = document.getElementById('reps');
     const inputPeso = document.getElementById('peso');
     const boton = document.getElementById("guardar");
     const lista = document.getElementById('lista');
     const CLAVE = 'series';
-
-    for (const nombre of ejercicios){
-        const opcion = document.createElement('option');
-        opcion.textContent = nombre;
-        inputEjercicio.appendChild(opcion);
-    }
+    const ejercicios = JSON.parse(localStorage.getItem('ejercicios')) || ['Press banca', 'Sentadilla', 'Peso muerto'];
     const series = JSON.parse(localStorage.getItem(CLAVE)) || [];
     boton.addEventListener('click', function () {
         
@@ -41,6 +39,32 @@
         mostrarSeries();
     });
 
+    function mostrarEjercicios(){
+        inputEjercicio.innerHTML = '';
+        
+        for (const nombre of ejercicios) {
+            const opcion = document.createElement('option');
+            opcion.textContent = nombre;
+            inputEjercicio.appendChild(opcion)
+        }
+    }
+        
+    botonAgregar.addEventListener('click', function () {
+        const nombre = inputNuevoEjercicio.value.trim();
+        if (nombre) {
+            if (ejercicios.includes(nombre)) {
+                alert('Este ejercicio ya existe');
+            } else {
+                ejercicios.push(nombre);
+                guardarEjercicios();
+                mostrarEjercicios();
+            }
+        }
+    });
+
+    function guardarEjercicios (){
+        localStorage.setItem('ejercicios', JSON.stringify(ejercicios));
+    }
     function mostrarSeries(){
         lista.innerHTML = '';
 
@@ -65,10 +89,11 @@
 
         }
     }
-
+    
     function guardarSeries() {
         localStorage.setItem(CLAVE, JSON.stringify(series));
     }
+    mostrarEjercicios();
     mostrarSeries();
 
 </script>
