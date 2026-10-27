@@ -7,19 +7,25 @@
 </head>
 <body>
     <h1>Gym Logs</h1>
-    <input id="ejercicio" placeholder="Ejercicio">
+    <select id="ejercicio"></select>
     <input id="reps" type="number" placeholder="Reps">
     <input id="peso" type="number" placeholder="Peso (Kg)">
     <button id="guardar">Guardar Serie</button>
     <ul id="lista"></ul>
 <script>
     const inputEjercicio = document.getElementById('ejercicio');
+    const ejercicios = ['Press banca', 'Sentadilla', 'Peso muerto' , 'Dominadas'];
     const inputReps = document.getElementById('reps');
     const inputPeso = document.getElementById('peso');
     const boton = document.getElementById("guardar");
     const lista = document.getElementById('lista');
     const CLAVE = 'series';
 
+    for (const nombre of ejercicios){
+        const opcion = document.createElement('option');
+        opcion.textContent = nombre;
+        inputEjercicio.appendChild(opcion);
+    }
     const series = JSON.parse(localStorage.getItem(CLAVE)) || [];
     boton.addEventListener('click', function () {
         
@@ -27,10 +33,11 @@
             ejercicio: inputEjercicio.value,
             reps: Number(inputReps.value),
             peso: Number(inputPeso.value),
+            fecha: new Date().toLocaleDateString(),
         };
 
         series.push(serie);
-        localStorage.setItem(CLAVE, JSON.stringify(series))
+        guardarSeries();
         mostrarSeries();
     });
 
@@ -39,7 +46,11 @@
 
         for (const serie of series) {
             const item = document.createElement('li');
-            item.textContent = serie.ejercicio + ': ' + serie.peso + ' kg x ' + serie.reps;
+            let texto = serie.ejercicio + ': ' + serie.peso + ' kg x ' +  serie.reps;
+            if (serie.fecha) {
+                texto = texto + ' (' + serie.fecha + ')'
+            }
+            item.textContent = texto
             const botonBorrar = document.createElement('button')
             botonBorrar.textContent = 'Borrar';
             item.appendChild(botonBorrar)
