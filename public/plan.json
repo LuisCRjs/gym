@@ -1,0 +1,82 @@
+{
+  "exercises": [
+    { "id": "press-plano", "name": "Press plano con barra", "metric": "reps", "defaultUnit": "kg", "defaultPerSide": true },
+    { "id": "remo-maquina", "name": "Remo en máquina", "metric": "reps", "defaultUnit": "pin", "defaultPerSide": false },
+    { "id": "remo-mancuerna-apoyado", "name": "Remo con mancuerna (pecho apoyado)", "metric": "reps", "defaultUnit": "kg", "defaultPerSide": false },
+    { "id": "press-militar-mancuernas", "name": "Press militar con mancuernas sentado", "metric": "reps", "defaultUnit": "kg", "defaultPerSide": false },
+    { "id": "press-militar-smith", "name": "Press militar en Smith", "metric": "reps", "defaultUnit": "kg", "defaultPerSide": true },
+    { "id": "dominadas", "name": "Dominadas", "metric": "reps", "defaultUnit": "kg", "defaultPerSide": false },
+    { "id": "jalon-pecho", "name": "Jalón al pecho", "metric": "reps", "defaultUnit": "pin", "defaultPerSide": false },
+    { "id": "face-pull", "name": "Face pull en polea", "metric": "reps", "defaultUnit": "pin", "defaultPerSide": false },
+    { "id": "plancha", "name": "Plancha", "metric": "seconds", "defaultUnit": "kg", "defaultPerSide": false },
+
+    { "id": "sentadilla-rack", "name": "Sentadilla en rack", "metric": "reps", "defaultUnit": "kg", "defaultPerSide": true },
+    { "id": "peso-muerto-rumano", "name": "Peso muerto rumano", "metric": "reps", "defaultUnit": "kg", "defaultPerSide": true },
+    { "id": "prensa", "name": "Prensa", "metric": "reps", "defaultUnit": "kg", "defaultPerSide": true },
+    { "id": "curl-femoral", "name": "Curl femoral", "metric": "reps", "defaultUnit": "pin", "defaultPerSide": false },
+    { "id": "pantorrillas", "name": "Pantorrillas", "metric": "reps", "defaultUnit": "kg", "defaultPerSide": false },
+    { "id": "rueda-abdominal", "name": "Rueda abdominal", "metric": "reps", "defaultUnit": "kg", "defaultPerSide": false },
+    { "id": "elevacion-piernas", "name": "Elevación de piernas", "metric": "reps", "defaultUnit": "kg", "defaultPerSide": false },
+
+    { "id": "press-inclinado-mancuernas", "name": "Press inclinado con mancuernas", "metric": "reps", "defaultUnit": "kg", "defaultPerSide": false },
+    { "id": "jalon-neutro", "name": "Jalón al pecho agarre neutro", "metric": "reps", "defaultUnit": "pin", "defaultPerSide": false },
+    { "id": "elevaciones-laterales", "name": "Elevaciones laterales", "metric": "reps", "defaultUnit": "kg", "defaultPerSide": false },
+    { "id": "remo-sentado-polea", "name": "Remo sentado en polea", "metric": "reps", "defaultUnit": "pin", "defaultPerSide": false },
+    { "id": "curl-biceps", "name": "Curl de bíceps", "metric": "reps", "defaultUnit": "kg", "defaultPerSide": false },
+    { "id": "triceps-polea", "name": "Tríceps en polea", "metric": "reps", "defaultUnit": "pin", "defaultPerSide": false },
+
+    { "id": "sentadilla-bulgara", "name": "Sentadilla búlgara", "metric": "reps", "defaultUnit": "kg", "defaultPerSide": false, "unilateral": true },
+    { "id": "zancadas", "name": "Zancadas", "metric": "reps", "defaultUnit": "kg", "defaultPerSide": false, "unilateral": true },
+    { "id": "hip-thrust", "name": "Hip thrust", "metric": "reps", "defaultUnit": "kg", "defaultPerSide": true },
+    { "id": "extension-cuadriceps", "name": "Extensión de cuádriceps", "metric": "reps", "defaultUnit": "pin", "defaultPerSide": false },
+    { "id": "plancha-lateral", "name": "Plancha lateral", "metric": "seconds", "defaultUnit": "kg", "defaultPerSide": false, "unilateral": true },
+    { "id": "pallof-press", "name": "Pallof press", "metric": "reps", "defaultUnit": "pin", "defaultPerSide": false, "unilateral": true },
+
+    { "id": "elevaciones-laterales-polea", "name": "Elevaciones laterales en polea", "metric": "reps", "defaultUnit": "pin", "defaultPerSide": false },
+    { "id": "remo-pecho-apoyado", "name": "Remo con pecho apoyado", "metric": "reps", "defaultUnit": "kg", "defaultPerSide": false },
+    { "id": "aperturas-polea", "name": "Aperturas en polea", "metric": "reps", "defaultUnit": "pin", "defaultPerSide": false },
+    { "id": "pajaros", "name": "Pájaros (deltoide posterior)", "metric": "reps", "defaultUnit": "kg", "defaultPerSide": false },
+    { "id": "curl-inclinado", "name": "Curl inclinado con mancuernas", "metric": "reps", "defaultUnit": "kg", "defaultPerSide": false },
+    { "id": "triceps-sobre-cabeza", "name": "Tríceps sobre la cabeza", "metric": "reps", "defaultUnit": "kg", "defaultPerSide": false },
+    { "id": "crunch-polea", "name": "Crunch en polea", "metric": "reps", "defaultUnit": "pin", "defaultPerSide": false },
+    { "id": "woodchopper", "name": "Woodchopper", "metric": "reps", "defaultUnit": "pin", "defaultPerSide": false }
+  ],
+  "slots": [
+    { "sessionKey": "UPPER_A", "order": 1, "exerciseIds": ["press-plano"], "sets": 4, "repMin": 6, "repMax": 8, "restSec": 180, "short": true, "note": "Escápulas atrás y abajo, pies firmes, baja al pecho controlado, sube sin despegar glúteos" },
+    { "sessionKey": "UPPER_A", "order": 2, "exerciseIds": ["remo-maquina", "remo-mancuerna-apoyado"], "sets": 4, "repMin": 8, "repMax": 10, "restSec": 120, "short": true, "note": "Pecho apoyado, jala con los codos hacia atrás, aprieta 1 s arriba" },
+    { "sessionKey": "UPPER_A", "order": 3, "exerciseIds": ["press-militar-mancuernas", "press-militar-smith"], "sets": 3, "repMin": 8, "repMax": 10, "restSec": 120, "short": true, "note": "Espalda apoyada, no arquees la zona lumbar, sube sin chocar las mancuernas" },
+    { "sessionKey": "UPPER_A", "order": 4, "exerciseIds": ["dominadas", "jalon-pecho"], "sets": 3, "repMin": 6, "repMax": 10, "restSec": 120, "short": true, "note": "Baja completo, jala con los codos hacia las costillas, sin balanceo. Dominadas con lastre si pasas 10" },
+    { "sessionKey": "UPPER_A", "order": 5, "exerciseIds": ["face-pull"], "sets": 3, "repMin": 12, "repMax": 15, "restSec": 90, "short": false, "note": "Polea a la altura de la cara, abre hacia las orejas" },
+    { "sessionKey": "UPPER_A", "order": 6, "exerciseIds": ["plancha"], "sets": 3, "repMin": 30, "repMax": 45, "restSec": 60, "short": false, "note": "Glúteo y abdomen apretados, sin hundir la cintura" },
+
+    { "sessionKey": "LOWER_A", "order": 1, "exerciseIds": ["sentadilla-rack"], "sets": 3, "repMin": 6, "repMax": 8, "restSec": 180, "short": true, "note": "Barra apoyada en la espalda alta, rodillas siguen la línea de los pies, baja controlado, espalda neutra" },
+    { "sessionKey": "LOWER_A", "order": 2, "exerciseIds": ["peso-muerto-rumano"], "sets": 3, "repMin": 8, "repMax": 10, "restSec": 180, "short": true, "note": "Barra pegada a las piernas, cadera hacia atrás, espalda neutra, baja hasta sentir el estiramiento atrás del muslo" },
+    { "sessionKey": "LOWER_A", "order": 3, "exerciseIds": ["prensa"], "sets": 3, "repMin": 10, "repMax": 12, "restSec": 120, "short": true, "note": "Pies a media altura, baja hasta ~90° sin despegar la cadera" },
+    { "sessionKey": "LOWER_A", "order": 4, "exerciseIds": ["curl-femoral"], "sets": 3, "repMin": 10, "repMax": 12, "restSec": 90, "short": false, "note": "Controla la bajada (3 s)" },
+    { "sessionKey": "LOWER_A", "order": 5, "exerciseIds": ["pantorrillas"], "sets": 4, "repMin": 12, "repMax": 15, "restSec": 60, "short": false, "note": "Recorrido completo, pausa de 1 s arriba" },
+    { "sessionKey": "LOWER_A", "order": 6, "exerciseIds": ["rueda-abdominal", "elevacion-piernas"], "sets": 3, "repMin": 8, "repMax": 12, "restSec": 90, "short": false, "note": "Cintura pegada al piso/respaldo, sin arquear" },
+
+    { "sessionKey": "UPPER_B", "order": 1, "exerciseIds": ["press-inclinado-mancuernas"], "sets": 4, "repMin": 8, "repMax": 12, "restSec": 120, "short": true, "note": "Banca a ~30°, codos a ~45° del torso" },
+    { "sessionKey": "UPPER_B", "order": 2, "exerciseIds": ["jalon-neutro"], "sets": 4, "repMin": 8, "repMax": 12, "restSec": 120, "short": true, "note": "Pecho hacia la barra, hombros abajo y atrás" },
+    { "sessionKey": "UPPER_B", "order": 3, "exerciseIds": ["elevaciones-laterales"], "sets": 4, "repMin": 12, "repMax": 20, "restSec": 60, "short": true, "note": "Peso ligero, sube hasta la altura del hombro, sin balanceo" },
+    { "sessionKey": "UPPER_B", "order": 4, "exerciseIds": ["remo-sentado-polea"], "sets": 3, "repMin": 10, "repMax": 12, "restSec": 90, "short": true, "note": "Pecho arriba, jala hacia el abdomen, aprieta escápulas" },
+    { "sessionKey": "UPPER_B", "order": 5, "exerciseIds": ["curl-biceps"], "sets": 3, "repMin": 10, "repMax": 12, "restSec": 60, "short": false, "note": "Codos fijos al costado" },
+    { "sessionKey": "UPPER_B", "order": 6, "exerciseIds": ["triceps-polea"], "sets": 3, "repMin": 10, "repMax": 12, "restSec": 60, "short": false, "note": "Codos fijos, extiende completo" },
+
+    { "sessionKey": "LOWER_B", "order": 1, "exerciseIds": ["sentadilla-bulgara", "zancadas"], "sets": 3, "repMin": 8, "repMax": 10, "restSec": 120, "short": true, "note": "Reps por pierna. Torso ligeramente inclinado, rodilla delantera estable, empieza ligero" },
+    { "sessionKey": "LOWER_B", "order": 2, "exerciseIds": ["hip-thrust"], "sets": 3, "repMin": 8, "repMax": 12, "restSec": 120, "short": true, "note": "Barbilla al pecho, aprieta glúteos 1 s arriba, sin arquear la espalda" },
+    { "sessionKey": "LOWER_B", "order": 3, "exerciseIds": ["extension-cuadriceps"], "sets": 3, "repMin": 12, "repMax": 15, "restSec": 90, "short": true, "note": "Pausa de 1 s arriba" },
+    { "sessionKey": "LOWER_B", "order": 4, "exerciseIds": ["curl-femoral"], "sets": 3, "repMin": 12, "repMax": 15, "restSec": 90, "short": false, "note": "Controla la bajada" },
+    { "sessionKey": "LOWER_B", "order": 5, "exerciseIds": ["pantorrillas"], "sets": 4, "repMin": 12, "repMax": 15, "restSec": 60, "short": false, "note": "Recorrido completo" },
+    { "sessionKey": "LOWER_B", "order": 6, "exerciseIds": ["plancha-lateral"], "sets": 3, "repMin": 30, "repMax": 30, "restSec": 60, "short": false, "note": "Segundos por lado" },
+    { "sessionKey": "LOWER_B", "order": 7, "exerciseIds": ["pallof-press"], "sets": 3, "repMin": 10, "repMax": 12, "restSec": 60, "short": false, "note": "Reps por lado. Resiste la rotación, sin girar el torso" },
+
+    { "sessionKey": "UPPER_C", "order": 1, "exerciseIds": ["elevaciones-laterales-polea"], "sets": 4, "repMin": 15, "repMax": 15, "restSec": 60, "short": true, "note": "Tensión constante" },
+    { "sessionKey": "UPPER_C", "order": 2, "exerciseIds": ["remo-pecho-apoyado"], "sets": 3, "repMin": 10, "repMax": 12, "restSec": 90, "short": true, "note": "Pecho pegado al respaldo" },
+    { "sessionKey": "UPPER_C", "order": 3, "exerciseIds": ["aperturas-polea"], "sets": 3, "repMin": 12, "repMax": 15, "restSec": 90, "short": true, "note": "Codo ligeramente flexionado, aprieta al centro" },
+    { "sessionKey": "UPPER_C", "order": 4, "exerciseIds": ["pajaros"], "sets": 3, "repMin": 15, "repMax": 15, "restSec": 60, "short": false, "note": "Peso ligero" },
+    { "sessionKey": "UPPER_C", "order": 5, "exerciseIds": ["curl-inclinado"], "sets": 3, "repMin": 12, "repMax": 12, "restSec": 60, "short": false, "note": "Brazos colgando hacia atrás para estirar el bíceps" },
+    { "sessionKey": "UPPER_C", "order": 6, "exerciseIds": ["triceps-sobre-cabeza"], "sets": 3, "repMin": 12, "repMax": 12, "restSec": 60, "short": false, "note": "Codos apuntando al frente" },
+    { "sessionKey": "UPPER_C", "order": 7, "exerciseIds": ["crunch-polea", "woodchopper"], "sets": 3, "repMin": 12, "repMax": 15, "restSec": 60, "short": false, "note": "Redondea el torso, no jales con los brazos" }
+  ]
+}

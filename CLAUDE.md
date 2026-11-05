@@ -202,13 +202,15 @@ Navegación inferior: **Inicio · Medidas · Progreso · Ajustes.** La pantalla 
 - Las 5 pantallas + bienvenida de la sección 7.
 - Respaldo JSON + Web Share API + aviso de último respaldo.
 - Sin fotos, sin comidas, sin notificaciones push, sin temporizador en segundo plano.
+- Gráficas con **Chart.js**.
+- Importar respaldo **reemplaza todo** (con confirmación previa).
+- Nombre provisional de la app: **Gym Tracker**.
+- Node se instala con **nvm** (por usuario, sin sudo).
 
 ### Pendiente
 - Diseño visual (se define con la pantalla de Sesión funcionando).
-- Importar respaldo: ¿reemplaza todo o fusiona?
-- Elegir uPlot vs Chart.js.
 - Verificar si los datos creados en Safari pasan a la PWA instalada (probablemente no).
-- Nombre de la app.
+- Hosting (decidir en el paso 10; afecta `base` en Vite).
 
 ### Ideas (no construir sin pedirlo)
 - Sincronización con Supabase / Firebase.
