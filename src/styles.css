@@ -1,0 +1,18 @@
+/* Estilo mínimo y provisional; el diseño visual se define con la pantalla de Sesión. */
+body { margin: 0; font-family: system-ui, sans-serif; background: #111; color: #eee; }
+main { padding: 16px 16px 88px; }
+button, select { font: inherit; color: inherit; }
+button { padding: 14px; border: 0; border-radius: 12px; background: #2a2a2a; }
+button:disabled { opacity: 0.4; }
+.label { margin: 20px 0 0; color: #999; font-size: 0.85rem; }
+.session { margin: 4px 0 16px; font-size: 2.2rem; font-weight: 700; }
+.actions { display: flex; gap: 12px; }
+.actions button { flex: 1; padding: 20px; font-size: 1.2rem; background: #3b82f6; }
+.other { display: block; margin-top: 16px; font-size: 0.9rem; color: #bbb; }
+.other select { padding: 6px; background: #2a2a2a; border: 0; border-radius: 8px; }
+.notice { padding: 10px 12px; border-radius: 10px; background: #3a3320; }
+.link { margin-top: 24px; background: none; color: #3b82f6; padding: 0; }
+nav { position: fixed; bottom: 0; left: 0; right: 0; display: flex; background: #1b1b1b;
+  padding-bottom: env(safe-area-inset-bottom); }
+nav button { flex: 1; padding: 16px 0; border-radius: 0; background: none; color: #999; }
+nav button.active { color: #fff; font-weight: 600; }

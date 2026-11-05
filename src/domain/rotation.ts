@@ -1,5 +1,13 @@
 import type { SessionKey } from '../types.ts';
 
+export const SESSION_LABEL: Record<SessionKey, string> = {
+  UPPER_A: 'Upper A',
+  LOWER_A: 'Lower A',
+  UPPER_B: 'Upper B',
+  LOWER_B: 'Lower B',
+  UPPER_C: 'Upper C',
+};
+
 const CYCLE: SessionKey[] = ['UPPER_A', 'LOWER_A', 'UPPER_B', 'LOWER_B'];
 
 // `lastKey` = sesión de la última Workout terminada (undefined si no hay historial).
