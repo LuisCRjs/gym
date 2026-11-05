@@ -6,16 +6,18 @@ import {
   LineController,
   LineElement,
   PointElement,
+  Filler,
   Tooltip,
 } from 'chart.js';
 import type { Point } from '../domain/progress.ts';
 
 // Registrar solo las piezas que se usan deja fuera el resto de Chart.js del bundle.
-Chart.register(LineController, LineElement, PointElement, LinearScale, CategoryScale, Tooltip);
-Chart.defaults.color = '#999';
-Chart.defaults.borderColor = '#2a2a2a';
+Chart.register(LineController, LineElement, PointElement, LinearScale, CategoryScale, Filler, Tooltip);
+Chart.defaults.color = '#8e8e93';
+Chart.defaults.borderColor = '#2c2c2e';
+Chart.defaults.font.family = '-apple-system, system-ui, sans-serif';
 
-export function LineChart({ points }: { points: Point[] }) {
+export function LineChart({ points, color = '#3b82f6' }: { points: Point[]; color?: string }) {
   const canvas = useRef<HTMLCanvasElement>(null);
 
   // Chart.js dibuja sobre el <canvas> fuera de React: se crea al montar y se destruye al cambiar.
@@ -24,12 +26,23 @@ export function LineChart({ points }: { points: Point[] }) {
       type: 'line',
       data: {
         labels: points.map((p) => p.label),
-        datasets: [{ data: points.map((p) => p.value), borderColor: '#3b82f6', backgroundColor: '#3b82f6', tension: 0.2 }],
+        datasets: [
+          {
+            data: points.map((p) => p.value),
+            borderColor: color,
+            backgroundColor: color + '26', // relleno translúcido bajo la línea
+            pointBackgroundColor: color,
+            pointRadius: 3,
+            borderWidth: 3,
+            fill: true,
+            tension: 0.35,
+          },
+        ],
       },
-      options: { animation: false, maintainAspectRatio: false, scales: { y: { grace: '5%' } } },
+      options: { maintainAspectRatio: false, scales: { y: { grace: '8%' } } },
     });
     return () => chart.destroy();
-  }, [points]);
+  }, [points, color]);
 
   return (
     <div className="chart">

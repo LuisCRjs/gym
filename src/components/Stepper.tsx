@@ -12,15 +12,16 @@ export function Stepper({ label, value, step, suffix, disabled, onChange }: Prop
   // Evita 0.1 + 0.2 = 0.30000000000000004 al sumar pasos decimales.
   const move = (delta: number) => onChange(Math.max(0, Math.round((value + delta) * 100) / 100));
   return (
-    <div className="stepper">
+    <div className="card stepper">
       <p className="label">{label}</p>
       <div>
-        <button disabled={disabled} onClick={() => move(-step)}>−</button>
-        <span>
+        <button className="round" aria-label="Menos" disabled={disabled} onClick={() => move(-step)}>−</button>
+        {/* key = value: al cambiar el número se vuelve a montar y se repite la animación */}
+        <span key={value}>
           {value}
           {suffix && <small> {suffix}</small>}
         </span>
-        <button disabled={disabled} onClick={() => move(step)}>+</button>
+        <button className="round plus" aria-label="Más" disabled={disabled} onClick={() => move(step)}>+</button>
       </div>
     </div>
   );

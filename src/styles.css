@@ -1,75 +1,215 @@
-/* Estilo mínimo y provisional; el diseño visual se define con la pantalla de Sesión. */
-body { margin: 0; font-family: system-ui, sans-serif; background: #111; color: #eee; }
-main { padding: 16px 16px 88px; }
-button, select { font: inherit; color: inherit; }
-button { padding: 14px; border: 0; border-radius: 12px; background: #2a2a2a; }
-button:disabled { opacity: 0.4; }
-.label { margin: 20px 0 0; color: #999; font-size: 0.85rem; }
-.session { margin: 4px 0 16px; font-size: 2.2rem; font-weight: 700; }
-.actions { display: flex; gap: 12px; }
-.actions button { flex: 1; padding: 20px; font-size: 1.2rem; background: #3b82f6; }
-.other { display: block; margin-top: 16px; font-size: 0.9rem; color: #bbb; }
-.other select { padding: 6px; background: #2a2a2a; border: 0; border-radius: 8px; }
-.notice { padding: 10px 12px; border-radius: 10px; background: #3a3320; }
-.link { margin-top: 24px; background: none; color: #3b82f6; padding: 0; }
-nav { position: fixed; bottom: 0; left: 0; right: 0; display: flex; background: #1b1b1b;
-  padding-bottom: env(safe-area-inset-bottom); }
-nav button { flex: 1; padding: 16px 0; border-radius: 0; background: none; color: #999; }
-nav button.active { color: #fff; font-weight: 600; }
+/* ============ Sistema de diseño: oscuro, colorido, estilo Apple Fitness ============ */
+:root {
+  color-scheme: dark;
+  --bg: #000;
+  --card: #1c1c1e;
+  --card-2: #2c2c2e;
+  --text: #fff;
+  --muted: #8e8e93;
+  --blue: #3b82f6;
+  --cyan: #22d3ee;
+  --purple: #a855f7;
+  --green: #30d158;
+  --orange: #ff9f0a;
+  --red: #ff453a;
+  --grad: linear-gradient(135deg, #3b82f6, #6366f1 55%, #a855f7);
+  --grad-green: linear-gradient(135deg, #30d158, #22d3ee);
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
 
-/* Sesión */
-.session-header { display: flex; justify-content: space-between; align-items: center; }
-.exercise-select { width: 100%; margin: 12px 0; padding: 12px; font-size: 1.3rem; font-weight: 700;
-  background: #2a2a2a; border: 0; border-radius: 10px; }
-details { margin: 8px 0; color: #bbb; }
-.chips { display: flex; gap: 8px; margin: 8px 0; }
-.chips button { flex: 1; padding: 12px 0; }
-.chips .active, .units .active { background: #3b82f6; }
-.chips .done { background: #166534; }
-.units { display: flex; gap: 8px; align-items: center; margin-top: 16px; }
-.units button { padding: 10px 14px; }
-.stepper > div { display: flex; align-items: center; gap: 12px; margin-top: 6px; }
-.stepper button { flex: 0 0 72px; padding: 18px 0; font-size: 1.6rem; }
-.stepper span { flex: 1; text-align: center; font-size: 2rem; font-weight: 700; }
-.stepper small { font-size: 1rem; font-weight: 400; color: #999; }
-.primary { width: 100%; margin: 20px 0 12px; padding: 22px; font-size: 1.3rem; background: #16a34a; }
-.suggestion { margin: 12px 0 0; padding: 8px 12px; border-radius: 10px; background: #1e3a5f; font-size: 0.9rem; }
-/* Pantalla completa, por encima de la sesión. El botón va abajo, al alcance del pulgar. */
-.timer { position: fixed; inset: 0; z-index: 10; display: flex; flex-direction: column;
-  align-items: center; justify-content: center; padding: 16px 16px calc(16px + env(safe-area-inset-bottom));
-  background: #111; font-variant-numeric: tabular-nums; }
-.timer.finished { background: #166534; }
-.timer p { margin: 0; font-size: 1.4rem; color: #ddd; }
-.timer strong { font-size: 30vw; line-height: 1.1; }
-.timer-actions { position: absolute; left: 16px; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom));
-  display: flex; gap: 12px; }
-.timer-actions button { flex: 1; padding: 22px; font-size: 1.2rem; background: #2a2a2a; }
-.timer.finished button { background: #fff; color: #111; font-weight: 700; }
-/* Versión oculta: barra fija abajo; tocarla vuelve a la pantalla completa. */
-.timer-mini { position: fixed; z-index: 10; left: 16px; right: 16px; bottom: calc(12px + env(safe-area-inset-bottom));
-  padding: 16px; font-size: 1.2rem; font-variant-numeric: tabular-nums; background: #3b82f6; }
-.timer-mini.finished { background: #16a34a; }
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+main { max-width: 520px; margin: 0 auto; padding: calc(20px + env(safe-area-inset-top)) 16px calc(120px + env(safe-area-inset-bottom)); }
+h1 { margin: 0 0 4px; font-size: 1.9rem; font-weight: 800; letter-spacing: -0.02em; line-height: 1.15; }
+p { margin: 0; }
+.muted { color: var(--muted); }
+.label { margin: 20px 0 8px; color: var(--muted); font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
+.card .label:first-child { margin-top: 0; }
+.hint { margin-top: 10px; color: var(--muted); font-size: 0.85rem; }
+.big-text { font-size: 1.15rem; font-weight: 600; }
 
-/* Medidas */
-.field { display: block; margin-top: 14px; color: #bbb; font-size: 0.9rem; }
-.field input { display: block; box-sizing: border-box; width: 100%; margin-top: 6px; padding: 14px;
-  font-size: 1.3rem; color: #eee; background: #2a2a2a; border: 0; border-radius: 10px; }
-.history { margin: 0; padding: 0; list-style: none; }
-.history li { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #222; }
-.history span:first-child { color: #999; font-variant-numeric: tabular-nums; }
-.history span:nth-child(2) { flex: 1; }
-.history button { padding: 8px 12px; background: none; color: #999; }
+/* ---------- Entrada de pantallas ---------- */
+@keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@keyframes slide-in { from { opacity: 0; transform: translateX(28px); } to { opacity: 1; transform: none; } }
+@keyframes pop { 0% { transform: scale(0.6); } 60% { transform: scale(1.15); } 100% { transform: scale(1); } }
+@keyframes bump { 0% { transform: scale(0.85); opacity: 0.5; } 100% { transform: none; opacity: 1; } }
+@keyframes glow { 0%, 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.55); } 50% { box-shadow: 0 0 0 9px rgba(59, 130, 246, 0); } }
+@keyframes celebrate { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }
+section { animation: rise 0.4s var(--ease) both; }
+.slide { animation: slide-in 0.32s var(--ease) both; }
+/* Elementos dentro de una pantalla entran escalonados */
+section > .card, section > .notice { animation: rise 0.45s var(--ease) both; }
+section > :nth-child(2) { animation-delay: 0.05s; }
+section > :nth-child(3) { animation-delay: 0.1s; }
+section > :nth-child(4) { animation-delay: 0.15s; }
+section > :nth-child(5) { animation-delay: 0.2s; }
 
-/* Ajustes */
-.toggle { display: flex; align-items: center; gap: 12px; margin-top: 20px; }
-.toggle input { width: 24px; height: 24px; }
-.file-button { display: block; padding: 18px; text-align: center; border-radius: 12px; background: #2a2a2a; }
+/* ---------- Tarjetas ---------- */
+.card { margin-top: 14px; padding: 18px; border-radius: 28px; background: var(--card); }
+details.card summary { cursor: pointer; font-weight: 600; }
+details.card p { margin-top: 10px; color: #c7c7cc; line-height: 1.45; }
+.notice { margin: 12px 0 0; padding: 12px 16px; border-radius: 18px; font-size: 0.9rem; line-height: 1.35; }
+.notice.info { background: rgba(59, 130, 246, 0.16); color: #93c5fd; }
+.notice.warn { background: rgba(255, 159, 10, 0.16); color: #ffc15a; }
+
+/* ---------- Botones ---------- */
+button {
+  font: inherit; color: inherit; border: 0; border-radius: 18px; padding: 16px 18px;
+  background: var(--card-2); cursor: pointer; touch-action: manipulation;
+  transition: transform 0.15s var(--ease), filter 0.15s, opacity 0.2s, background 0.2s;
+}
+button:active:not(:disabled) { transform: scale(0.95); filter: brightness(1.15); }
+button:disabled { opacity: 0.35; }
+.actions { display: flex; gap: 12px; margin-top: 16px; }
+.actions button { flex: 1; font-size: 1.05rem; font-weight: 600; }
+.primary { width: 100%; padding: 20px; border-radius: 22px; font-size: 1.15rem; font-weight: 700; background: var(--grad); box-shadow: 0 8px 24px rgba(99, 102, 241, 0.35); }
+.actions .primary { width: auto; box-shadow: none; }
+.primary.success { margin-top: 18px; background: var(--grad-green); color: #00210d; box-shadow: 0 8px 24px rgba(48, 209, 88, 0.3); }
+.card .primary { margin-top: 16px; }
+.light { background: #fff; color: #111; font-weight: 700; }
+.glass { background: rgba(255, 255, 255, 0.22); backdrop-filter: blur(8px); }
+.pill { padding: 10px 16px; border-radius: 999px; font-size: 0.95rem; }
+.link { margin-top: 20px; padding: 0; background: none; color: var(--blue); }
+.hero-link { margin-top: 14px; padding: 0; background: none; color: rgba(255, 255, 255, 0.75); font-size: 0.9rem; }
+.row-button { display: flex; align-items: center; justify-content: space-between; width: 100%; text-align: left; font-weight: 600; font-size: 1.05rem; background: var(--card); border-radius: 28px; }
+.row-button span:last-child { color: var(--muted); font-size: 1.5rem; }
+.icon-btn { padding: 8px 12px; border-radius: 12px; background: none; color: var(--red); }
+.round { flex: 0 0 68px; height: 68px; padding: 0; border-radius: 50%; font-size: 1.9rem; background: var(--card-2); }
+.round.plus { background: var(--blue); }
+
+/* ---------- Formularios ---------- */
+select, input[type='date'], input[type='number'] {
+  font: inherit; color: var(--text); border: 0; border-radius: 16px; background: var(--card-2);
+}
+select {
+  -webkit-appearance: none; appearance: none; padding: 12px 38px 12px 16px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none' stroke='%238e8e93' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 14px center;
+}
+select:disabled { opacity: 0.5; }
+.field { display: block; margin-top: 14px; color: var(--muted); font-size: 0.85rem; font-weight: 600; }
+.field:first-child { margin-top: 0; }
+.field input { display: block; width: 100%; margin-top: 8px; padding: 16px; font-size: 1.25rem; }
+input:focus-visible, select:focus-visible { outline: 2px solid var(--blue); }
+.field-row { display: flex; gap: 12px; }
+.field-row .field { flex: 1; min-width: 0; }
+.toggle { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 0.95rem; }
+.toggle.spread { justify-content: space-between; margin-top: 18px; color: var(--text); font-size: 1rem; }
+input.switch {
+  -webkit-appearance: none; appearance: none; position: relative; flex: none; width: 51px; height: 31px;
+  margin: 0; border-radius: 16px; background: #39393d; transition: background 0.25s;
+}
+input.switch::after {
+  content: ''; position: absolute; top: 2px; left: 2px; width: 27px; height: 27px; border-radius: 50%;
+  background: #fff; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); transition: transform 0.25s var(--ease);
+}
+input.switch:checked { background: var(--green); }
+input.switch:checked::after { transform: translateX(20px); }
+.file-button { display: block; margin-top: 12px; padding: 18px; text-align: center; font-weight: 600; border-radius: 22px; background: var(--card-2); }
 .file-button input { display: none; }
-.hint { color: #999; font-size: 0.85rem; }
 
-/* Bienvenida */
-.steps { padding-left: 20px; line-height: 1.6; }
-.steps li { margin-bottom: 8px; }
+/* ---------- Anillos ---------- */
+.ring { position: relative; flex: none; }
+.ring svg { display: block; }
+.ring-fill { transition: stroke-dashoffset 0.9s var(--ease); }
+.ring-fill.linear { transition: stroke-dashoffset 0.3s linear; }
+.ring-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.ring-center strong { font-size: 1.6rem; font-weight: 800; line-height: 1; }
+.ring-center small { margin-top: 2px; color: var(--muted); font-size: 0.75rem; }
 
-/* Progreso */
-.chart { position: relative; height: 200px; margin: 8px 0 16px; }
+/* ---------- Inicio ---------- */
+.week-card { display: flex; align-items: center; gap: 18px; margin-top: 0; }
+.week-card .ring-center strong { font-size: 2.2rem; }
+.hero { background: var(--grad); box-shadow: 0 12px 32px rgba(99, 102, 241, 0.3); }
+.hero-label { color: rgba(255, 255, 255, 0.8); font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
+.session { margin: 4px 0 0; font-size: 2.6rem; font-weight: 800; letter-spacing: -0.03em; }
+.other { display: flex; align-items: center; justify-content: space-between; margin-top: 16px; color: rgba(255, 255, 255, 0.85); font-size: 0.95rem; }
+.other select { background-color: rgba(255, 255, 255, 0.22); color: #fff; }
+.other option { color: #000; }
+
+/* ---------- Sesión ---------- */
+.session-header { display: flex; align-items: center; justify-content: space-between; }
+.progress-bar { height: 6px; margin: 14px 0 4px; overflow: hidden; border-radius: 3px; background: var(--card); }
+.progress-bar div { height: 100%; border-radius: 3px; background: var(--grad-green); transition: width 0.6s var(--ease); }
+.exercise-head { display: flex; align-items: center; gap: 16px; }
+.exercise-head > div:last-child { min-width: 0; flex: 1; }
+.exercise-head h1 { font-size: 1.45rem; }
+.exercise-select { width: 100%; padding-top: 10px; padding-bottom: 10px; font-size: 1.15rem; font-weight: 700; }
+.chips { display: flex; gap: 10px; }
+.chips button { flex: 1; padding: 14px 0; border-radius: 16px; font-weight: 700; color: var(--muted); }
+.chips .active { color: #fff; background: var(--blue); animation: glow 1.8s infinite; }
+.chips .done { color: #00210d; background: var(--green); animation: pop 0.35s var(--ease); }
+.units { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 14px; }
+.segmented { display: flex; padding: 3px; border-radius: 14px; background: var(--card); }
+.segmented button { padding: 9px 14px; border-radius: 11px; background: none; color: var(--muted); font-size: 0.9rem; font-weight: 600; }
+.segmented .active { background: var(--card-2); color: #fff; }
+.suggestion { margin-top: 14px; padding: 12px 16px; border-radius: 18px; background: rgba(34, 211, 238, 0.14); color: #7be4f5; font-size: 0.9rem; line-height: 1.35; }
+.stepper > div { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; }
+.stepper .label { margin-bottom: 0; }
+.stepper span { font-size: 2.6rem; font-weight: 800; font-variant-numeric: tabular-nums; animation: bump 0.2s var(--ease); }
+.stepper small { font-size: 1rem; font-weight: 500; color: var(--muted); }
+/* Anterior / Siguiente quedan fijos abajo; el degradado tapa el contenido que pasa por detrás. */
+section > .actions { position: sticky; bottom: 0; margin: 16px -16px 0; padding: 24px 16px calc(12px + env(safe-area-inset-bottom)); background: linear-gradient(transparent, var(--bg) 35%); }
+
+/* ---------- Temporizador de descanso ---------- */
+.timer {
+  position: fixed; inset: 0; z-index: 10; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 16px 16px calc(16px + env(safe-area-inset-bottom)); font-variant-numeric: tabular-nums;
+  background: radial-gradient(circle at 50% 35%, #0f2a52, #000 70%); animation: rise 0.3s var(--ease) both;
+}
+.timer.finished { background: radial-gradient(circle at 50% 35%, #146c2e, #03180a 75%); }
+.timer.finished .ring { animation: celebrate 1s ease-in-out infinite; }
+.timer .ring-center strong { font-size: clamp(3.2rem, 20vw, 5.2rem); font-weight: 800; }
+.timer .ring-center p { margin-top: 6px; color: #aab; font-size: 1.1rem; }
+.timer-actions { position: absolute; left: 16px; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom)); display: flex; gap: 12px; }
+.timer-actions button { flex: 1; padding: 22px; font-size: 1.1rem; font-weight: 600; background: rgba(255, 255, 255, 0.14); }
+.timer-actions .light { background: #fff; color: #111; font-weight: 700; }
+/* Versión oculta: barra fija abajo; tocarla vuelve a la pantalla completa. */
+.timer-mini {
+  position: fixed; z-index: 10; left: 16px; right: 16px; bottom: calc(12px + env(safe-area-inset-bottom));
+  padding: 18px; font-size: 1.15rem; font-weight: 700; font-variant-numeric: tabular-nums;
+  background: var(--grad); box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4); animation: rise 0.3s var(--ease) both;
+}
+.timer-mini.finished { background: var(--grad-green); color: #00210d; }
+
+/* ---------- Medidas ---------- */
+.history { margin-top: 0; padding: 4px 18px; list-style: none; }
+.history li { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #2c2c2e; }
+.history li:last-child { border-bottom: 0; }
+.history li span:nth-of-type(2) { flex: 1; }
+.history strong { font-variant-numeric: tabular-nums; }
+.dot { flex: none; width: 10px; height: 10px; border-radius: 50%; }
+.dot.weight { background: var(--blue); }
+.dot.waist { background: var(--orange); }
+
+/* ---------- Progreso ---------- */
+.chart { position: relative; height: 200px; margin-top: 8px; }
+.card .exercise-select { margin-bottom: 4px; }
+
+/* ---------- Bienvenida ---------- */
+.brand-icon { display: block; margin-bottom: 16px; border-radius: 22px; box-shadow: 0 8px 24px rgba(59, 130, 246, 0.35); }
+.steps { margin-bottom: 0; padding: 18px 18px 18px 40px; line-height: 1.5; }
+.steps li { margin-bottom: 10px; }
+.steps li:last-child { margin-bottom: 0; }
+.steps li::marker { color: var(--blue); font-weight: 800; }
+
+/* ---------- Navegación inferior flotante ---------- */
+nav {
+  position: fixed; z-index: 5; left: 16px; right: 16px; bottom: calc(12px + env(safe-area-inset-bottom));
+  max-width: 488px; margin: 0 auto; display: flex; padding: 6px; border-radius: 30px;
+  background: rgba(28, 28, 30, 0.82); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+nav button { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 9px 0 7px; border-radius: 24px; background: none; color: var(--muted); font-size: 0.7rem; font-weight: 600; }
+nav button.active { color: var(--blue); background: rgba(59, 130, 246, 0.16); }
+nav button.active svg { animation: pop 0.35s var(--ease); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+}

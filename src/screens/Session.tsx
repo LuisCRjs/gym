@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { RestTimer } from '../components/RestTimer';
+import { Ring } from '../components/Ring';
 import { Stepper } from '../components/Stepper';
 import {
   getEntryHistory,
@@ -24,7 +25,7 @@ export function Session({ workoutId, onExit }: { workoutId: string; onExit: () =
   const [idx, setIdx] = useState(0);
   const [deload, setDeload] = useState(false);
   const [history, setHistory] = useState<Entry[]>([]);
-  const [restEndsAt, setRestEndsAt] = useState<number>();
+  const [rest, setRest] = useState<{ endsAt: number; totalSec: number }>();
   const [restHidden, setRestHidden] = useState(false);
 
   useEffect(() => {
@@ -62,8 +63,10 @@ export function Session({ workoutId, onExit }: { workoutId: string; onExit: () =
 
   const active = entry.sets.findIndex((s) => !s.done); // -1 = ejercicio completo
   const anyDone = entry.sets.some((s) => s.done);
+  const doneCount = entry.sets.filter((s) => s.done).length;
   const isLast = idx === workout.entries.length - 1;
   const current = entry.sets[Math.max(active, 0)];
+  const finishedExercises = workout.entries.filter((e) => e.sets.every((s) => s.done)).length;
 
   // Peso: aplica a todas las series pendientes. Reps: solo a la serie activa.
   const setWeight = (weight: number) =>
@@ -76,7 +79,7 @@ export function Session({ workoutId, onExit }: { workoutId: string; onExit: () =
   // Al marcar ✓ se guarda la serie y arranca el descanso del slot.
   const markDone = () => {
     setDone(active, true);
-    setRestEndsAt(Date.now() + slot.restSec * 1000);
+    setRest({ endsAt: Date.now() + slot.restSec * 1000, totalSec: slot.restSec });
     setRestHidden(false); // cada descanso nuevo arranca en pantalla completa
   };
 
@@ -112,114 +115,135 @@ export function Session({ workoutId, onExit }: { workoutId: string; onExit: () =
   return (
     <section>
       <header className="session-header">
-        <button className="link" onClick={onExit}>← Salir</button>
-        <span className="label">
+        <button className="pill" onClick={onExit}>← Salir</button>
+        <span className="muted">
           {SESSION_LABEL[workout.sessionKey]} · {idx + 1}/{workout.entries.length}
         </span>
       </header>
-
-      {slot.exerciseIds.length > 1 ? (
-        <select
-          className="exercise-select"
-          value={entry.exerciseId}
-          disabled={anyDone}
-          onChange={(e) => changeExercise(e.target.value)}
-        >
-          {slot.exerciseIds.map((id) => (
-            <option key={id} value={id}>
-              {plan.exercises.find((e) => e.id === id)?.name}
-            </option>
-          ))}
-        </select>
-      ) : (
-        <h1>{exercise.name}</h1>
-      )}
-
-      <p>
-        {slot.sets !== entry.sets.length ? `${entry.sets.length} series (descarga)` : `${entry.sets.length} series`}{' '}
-        · {slot.repMin === slot.repMax ? slot.repMin : `${slot.repMin}-${slot.repMax}`}{' '}
-        {isSeconds ? 's' : 'reps'}
-        {exercise.unilateral && ' por lado'}
-      </p>
-      {slot.note && (
-        <details>
-          <summary>Técnica</summary>
-          <p>{slot.note}</p>
-        </details>
-      )}
-
-      <p className="label">{active === -1 ? 'Ejercicio completo' : `Serie ${active + 1} de ${entry.sets.length}`}</p>
-      <div className="chips">
-        {entry.sets.map((s, i) => (
-          <button
-            key={i}
-            className={s.done ? 'done' : i === active ? 'active' : ''}
-            onClick={() => s.done && setDone(i, false)} // tocar una serie hecha la deshace
-          >
-            {s.done ? '✓' : i + 1}
-          </button>
-        ))}
+      <div className="progress-bar">
+        <div style={{ width: `${(finishedExercises / workout.entries.length) * 100}%` }} />
       </div>
 
-      <div className="units">
-        {(['kg', 'lb', 'pin'] as Unit[]).map((u) => (
-          <button key={u} className={u === entry.unit ? 'active' : ''} onClick={() => setUnit(u)}>
-            {UNIT_LABEL[u]}
-          </button>
-        ))}
-        <label>
-          <input
-            type="checkbox"
-            checked={entry.perSide}
-            onChange={(e) => updateEntry({ ...entry, perSide: e.target.checked })}
-          />{' '}
-          por lado
-        </label>
-      </div>
+      {/* key = idx: al cambiar de ejercicio el contenido se vuelve a montar y entra con animación */}
+      <div className="slide" key={idx}>
+        <div className="card exercise-head">
+          <Ring value={doneCount / entry.sets.length} size={96} stroke={12} from="#30d158" to="#22d3ee">
+            <strong>
+              {doneCount}/{entry.sets.length}
+            </strong>
+          </Ring>
+          <div>
+            {slot.exerciseIds.length > 1 ? (
+              <select
+                className="exercise-select"
+                value={entry.exerciseId}
+                disabled={anyDone}
+                onChange={(e) => changeExercise(e.target.value)}
+              >
+                {slot.exerciseIds.map((id) => (
+                  <option key={id} value={id}>
+                    {plan.exercises.find((e) => e.id === id)?.name}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <h1>{exercise.name}</h1>
+            )}
+            <p className="muted">
+              {slot.sets !== entry.sets.length ? `${entry.sets.length} series (descarga)` : `${entry.sets.length} series`}{' '}
+              · {slot.repMin === slot.repMax ? slot.repMin : `${slot.repMin}-${slot.repMax}`}{' '}
+              {isSeconds ? 's' : 'reps'}
+              {exercise.unilateral && ' por lado'}
+            </p>
+          </div>
+        </div>
 
-      {suggestion && suggestedWeight !== null && (
-        <p className="suggestion">
-          Sugerencia: {suggestion.kind === 'up' ? 'subir' : 'bajar'} a {suggestedWeight}{' '}
-          {UNIT_LABEL[entry.unit]}
-          {suggestion.kind === 'up' && ` y volver a ${suggestion.reps} reps`}
+        {slot.note && (
+          <details className="card">
+            <summary>Técnica</summary>
+            <p>{slot.note}</p>
+          </details>
+        )}
+
+        <p className="label">
+          {active === -1 ? 'Ejercicio completo ✓' : `Serie ${active + 1} de ${entry.sets.length}`}
         </p>
-      )}
+        <div className="chips">
+          {entry.sets.map((s, i) => (
+            <button
+              key={i}
+              className={s.done ? 'done' : i === active ? 'active' : ''}
+              onClick={() => s.done && setDone(i, false)} // tocar una serie hecha la deshace
+            >
+              {s.done ? '✓' : i + 1}
+            </button>
+          ))}
+        </div>
 
-      <Stepper
-        label={entry.unit === 'pin' ? 'Barrita' : entry.perSide ? `Peso por lado (${entry.unit})` : `Peso (${entry.unit})`}
-        value={current.weight}
-        step={STEP[entry.unit]}
-        disabled={active === -1}
-        onChange={setWeight}
-      />
-      <Stepper
-        label={isSeconds ? 'Segundos' : 'Reps'}
-        value={current.value}
-        step={isSeconds ? 5 : 1}
-        disabled={active === -1}
-        onChange={setValue}
-      />
+        <div className="units">
+          <div className="segmented">
+            {(['kg', 'lb', 'pin'] as Unit[]).map((u) => (
+              <button key={u} className={u === entry.unit ? 'active' : ''} onClick={() => setUnit(u)}>
+                {UNIT_LABEL[u]}
+              </button>
+            ))}
+          </div>
+          <label className="toggle">
+            por lado
+            <input
+              className="switch"
+              type="checkbox"
+              checked={entry.perSide}
+              onChange={(e) => updateEntry({ ...entry, perSide: e.target.checked })}
+            />
+          </label>
+        </div>
 
-      <button className="primary" disabled={active === -1} onClick={markDone}>
-        ✓ Serie hecha
-      </button>
+        {suggestion && suggestedWeight !== null && (
+          <p className="suggestion">
+            💡 Sugerencia: {suggestion.kind === 'up' ? 'subir' : 'bajar'} a {suggestedWeight}{' '}
+            {UNIT_LABEL[entry.unit]}
+            {suggestion.kind === 'up' && ` y volver a ${suggestion.reps} reps`}
+          </p>
+        )}
 
-      {restEndsAt && (
+        <Stepper
+          label={entry.unit === 'pin' ? 'Barrita' : entry.perSide ? `Peso por lado (${entry.unit})` : `Peso (${entry.unit})`}
+          value={current.weight}
+          step={STEP[entry.unit]}
+          disabled={active === -1}
+          onChange={setWeight}
+        />
+        <Stepper
+          label={isSeconds ? 'Segundos' : 'Reps'}
+          value={current.value}
+          step={isSeconds ? 5 : 1}
+          disabled={active === -1}
+          onChange={setValue}
+        />
+
+        <button className="primary success" disabled={active === -1} onClick={markDone}>
+          ✓ Serie hecha
+        </button>
+      </div>
+
+      {rest && (
         <RestTimer
-          endsAt={restEndsAt}
+          endsAt={rest.endsAt}
+          totalSec={rest.totalSec}
           hidden={restHidden}
           onHide={() => setRestHidden(true)}
           onShow={() => setRestHidden(false)}
-          onClose={() => setRestEndsAt(undefined)}
+          onClose={() => setRest(undefined)}
         />
       )}
 
       <div className="actions">
         <button disabled={idx === 0} onClick={() => setIdx(idx - 1)}>← Anterior</button>
         {isLast ? (
-          <button onClick={finish}>Terminar sesión</button>
+          <button className="primary" onClick={finish}>Terminar sesión</button>
         ) : (
-          <button onClick={() => setIdx(idx + 1)}>Siguiente →</button>
+          <button className="primary" onClick={() => setIdx(idx + 1)}>Siguiente →</button>
         )}
       </div>
     </section>

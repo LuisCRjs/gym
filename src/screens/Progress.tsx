@@ -39,38 +39,44 @@ export function Progress() {
     <section>
       <h1>Progreso</h1>
 
-      <p className="label">Cintura (cm)</p>
-      {waist.length ? <LineChart points={waist} /> : <p>Sin registros de cintura.</p>}
+      <div className="card">
+        <p className="label">Cintura (cm)</p>
+        {waist.length ? <LineChart points={waist} color="#ff9f0a" /> : <p className="muted">Sin registros de cintura.</p>}
+      </div>
 
-      <p className="label">Peso corporal (kg, promedio semanal)</p>
-      {weight.length ? <LineChart points={weight} /> : <p>Sin registros de peso.</p>}
+      <div className="card">
+        <p className="label">Peso corporal (kg, promedio semanal)</p>
+        {weight.length ? <LineChart points={weight} color="#3b82f6" /> : <p className="muted">Sin registros de peso.</p>}
+      </div>
 
-      <p className="label">Por ejercicio</p>
-      {trained.length === 0 ? (
-        <p>Termina una sesión para ver tu progresión.</p>
-      ) : (
-        <>
-          <select className="exercise-select" value={selectedId} onChange={(e) => setExerciseId(e.target.value)}>
-            {trained.map((e) => (
-              <option key={e.id} value={e.id}>
-                {e.name}
-              </option>
-            ))}
-          </select>
-          {series && (
-            <>
-              <p className="hint">
-                {series.kind === 'weight'
-                  ? `Peso de trabajo (${UNIT_LABEL[series.unit]})`
-                  : selected.metric === 'seconds'
-                    ? 'Mejor serie (segundos)'
-                    : 'Mejor serie (reps)'}
-              </p>
-              <LineChart points={series.points} />
-            </>
-          )}
-        </>
-      )}
+      <div className="card">
+        <p className="label">Por ejercicio</p>
+        {trained.length === 0 ? (
+          <p className="muted">Termina una sesión para ver tu progresión.</p>
+        ) : (
+          <>
+            <select className="exercise-select" value={selectedId} onChange={(e) => setExerciseId(e.target.value)}>
+              {trained.map((e) => (
+                <option key={e.id} value={e.id}>
+                  {e.name}
+                </option>
+              ))}
+            </select>
+            {series && (
+              <>
+                <p className="hint">
+                  {series.kind === 'weight'
+                    ? `Peso de trabajo (${UNIT_LABEL[series.unit]})`
+                    : selected.metric === 'seconds'
+                      ? 'Mejor serie (segundos)'
+                      : 'Mejor serie (reps)'}
+                </p>
+                <LineChart points={series.points} color="#30d158" />
+              </>
+            )}
+          </>
+        )}
+      </div>
     </section>
   );
 }

@@ -25,9 +25,10 @@ export function Welcome({ onDone }: { onDone: () => void }) {
   if (step === 'install') {
     return (
       <section>
+        <img className="brand-icon" src="/icon-192.png" alt="" width="88" height="88" />
         <h1>Instala Gym Tracker</h1>
-        <p>Para que tus datos no se borren, úsala desde la pantalla de inicio:</p>
-        <ol className="steps">
+        <p className="muted">Para que tus datos no se borren, úsala desde la pantalla de inicio:</p>
+        <ol className="card steps">
           <li>
             En Safari, toca <strong>Compartir</strong> (el cuadro con la flecha hacia arriba).
           </li>
@@ -51,24 +52,28 @@ export function Welcome({ onDone }: { onDone: () => void }) {
 
   return (
     <section>
+      <img className="brand-icon" src="/icon-192.png" alt="" width="88" height="88" />
       <h1>Bienvenido</h1>
-      <p>Dos datos y empiezas.</p>
-      <label className="field">
-        ¿Cuándo empieza (o empezó) tu plan de 12 semanas?
-        <input
-          type="date"
-          value={planStartDate}
-          onChange={(e) => setPlanStartDate(e.target.value || todayISO())}
-        />
-      </label>
-      <label className="toggle">
-        <input
-          type="checkbox"
-          checked={includeUpperC}
-          onChange={(e) => setIncludeUpperC(e.target.checked)}
-        />
-        Incluir Upper C (5ª sesión opcional)
-      </label>
+      <p className="muted">Dos datos y empiezas.</p>
+      <div className="card">
+        <label className="field">
+          ¿Cuándo empieza (o empezó) tu plan de 12 semanas?
+          <input
+            type="date"
+            value={planStartDate}
+            onChange={(e) => setPlanStartDate(e.target.value || todayISO())}
+          />
+        </label>
+        <label className="toggle spread">
+          Incluir Upper C (5ª sesión opcional)
+          <input
+            className="switch"
+            type="checkbox"
+            checked={includeUpperC}
+            onChange={(e) => setIncludeUpperC(e.target.checked)}
+          />
+        </label>
+      </div>
       <p className="hint">Ambas cosas se pueden cambiar después en Ajustes.</p>
       <button className="primary" onClick={start}>
         Empezar

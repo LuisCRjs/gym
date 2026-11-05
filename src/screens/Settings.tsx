@@ -68,40 +68,45 @@ export function Settings() {
     <section>
       <h1>Ajustes</h1>
 
-      <label className="field">
-        Fecha de inicio del plan
-        <input
-          type="date"
-          value={settings.planStartDate}
-          onChange={(e) => e.target.value && change({ planStartDate: e.target.value })}
-        />
-      </label>
+      <div className="card">
+        <p className="label">Plan</p>
+        <label className="field">
+          Fecha de inicio
+          <input
+            type="date"
+            value={settings.planStartDate}
+            onChange={(e) => e.target.value && change({ planStartDate: e.target.value })}
+          />
+        </label>
+        <label className="toggle spread">
+          Incluir Upper C (opcional)
+          <input
+            className="switch"
+            type="checkbox"
+            checked={settings.includeUpperC}
+            onChange={(e) => change({ includeUpperC: e.target.checked })}
+          />
+        </label>
+      </div>
 
-      <label className="toggle">
-        <input
-          type="checkbox"
-          checked={settings.includeUpperC}
-          onChange={(e) => change({ includeUpperC: e.target.checked })}
-        />
-        Incluir Upper C (opcional) en la rotación
-      </label>
-
-      <p className="label">Respaldo</p>
-      <p>
-        {days === undefined
-          ? 'Nunca has hecho un respaldo.'
-          : days === 0
-            ? 'Último respaldo: hoy.'
-            : `Último respaldo: hace ${days} día${days === 1 ? '' : 's'}.`}
-      </p>
-      <button className="primary" onClick={exportData}>
-        Exportar respaldo
-      </button>
-      <label className="file-button">
-        Importar respaldo
-        <input type="file" accept="application/json,.json" onChange={(e) => importData(e.target)} />
-      </label>
-      <p className="hint">Importar reemplaza todos los datos actuales de este teléfono.</p>
+      <div className="card">
+        <p className="label">Respaldo</p>
+        <p className="big-text">
+          {days === undefined
+            ? 'Nunca has hecho un respaldo'
+            : days === 0
+              ? 'Último respaldo: hoy'
+              : `Último respaldo: hace ${days} día${days === 1 ? '' : 's'}`}
+        </p>
+        <button className="primary" onClick={exportData}>
+          Exportar respaldo
+        </button>
+        <label className="file-button">
+          Importar respaldo
+          <input type="file" accept="application/json,.json" onChange={(e) => importData(e.target)} />
+        </label>
+        <p className="hint">Importar reemplaza todos los datos actuales de este teléfono.</p>
+      </div>
     </section>
   );
 }

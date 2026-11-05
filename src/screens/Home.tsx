@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Ring } from '../components/Ring';
 import {
   deleteWorkout,
   getInProgressWorkout,
@@ -59,73 +60,85 @@ export function Home({ onOpenMeasurements, onOpenSession }: Props) {
     : undefined;
   const backupOverdue = last && (backupDays === undefined || backupDays >= BACKUP_WARN_DAYS);
 
+  const inPlan = week >= 1 && week <= 12;
+  const title = week < 1 ? 'Aún no empieza' : week > 12 ? 'Plan terminado' : `Semana ${week} de 12`;
+  const subtitle =
+    week < 1
+      ? `El plan empieza el ${settings.planStartDate}`
+      : week > 12
+        ? '¡Lo lograste! Revisa tu progreso'
+        : isDeloadWeek(week)
+          ? 'Descarga: recupera'
+          : `${12 - week} semanas para terminar`;
+
   return (
     <section>
-      <h1>
-        {week < 1
-          ? `El plan empieza el ${settings.planStartDate}`
-          : week > 12
-            ? 'Plan terminado'
-            : `Semana ${week} de 12`}
-      </h1>
+      <div className="card week-card">
+        <Ring value={inPlan ? week / 12 : week > 12 ? 1 : 0} size={104} stroke={13}>
+          <strong>{inPlan ? week : week > 12 ? '✓' : '–'}</strong>
+          {inPlan && <small>de 12</small>}
+        </Ring>
+        <div>
+          <h1>{title}</h1>
+          <p className="muted">{subtitle}</p>
+        </div>
+      </div>
 
       {!isStandalone() && (
-        <p className="notice">
-          Instala la app para no perder datos: Compartir → Añadir a pantalla de inicio.
-        </p>
+        <p className="notice info">Instala la app para no perder datos: Compartir → Añadir a pantalla de inicio.</p>
       )}
       {isDeloadWeek(week) && (
-        <p className="notice">Semana de descarga: mitad de series, mismo peso, sin subir.</p>
-      )}
-      {inProgress && (
-        <p className="notice">Tienes una sesión en curso: {SESSION_LABEL[inProgress.sessionKey]}.</p>
+        <p className="notice warn">Semana de descarga: mitad de series, mismo peso, sin subir.</p>
       )}
       {backupOverdue && (
-        <p className="notice">
-          {backupDays === undefined
-            ? 'Aún no has hecho un respaldo.'
-            : `Último respaldo hace ${backupDays} días.`}
+        <p className="notice warn">
+          {backupDays === undefined ? 'Aún no has hecho un respaldo.' : `Último respaldo hace ${backupDays} días.`}
         </p>
       )}
 
-      <p className="label">Siguiente sesión</p>
-      <p className="session">{SESSION_LABEL[session]}</p>
+      <div className="card hero">
+        <p className="hero-label">{inProgress ? 'Sesión en curso' : 'Siguiente sesión'}</p>
+        <p className="session">{SESSION_LABEL[inProgress ? inProgress.sessionKey : session]}</p>
 
-      {inProgress ? (
-        <>
-          <div className="actions">
-            <button onClick={() => onOpenSession(inProgress.id)}>Continuar</button>
-          </div>
-          <button className="link" onClick={discard}>Descartar sesión en curso</button>
-        </>
-      ) : (
-        <>
-          <div className="actions">
-            <button onClick={() => start('full')}>Completa</button>
-            <button onClick={() => start('short')}>Corta ⭐</button>
-          </div>
-          <label className="other">
-            Elegir otra sesión:{' '}
-            <select value={session} onChange={(e) => setChosen(e.target.value as SessionKey)}>
-              {options.map((k) => (
-                <option key={k} value={k}>
-                  {SESSION_LABEL[k]}
-                </option>
-              ))}
-            </select>
-          </label>
-        </>
-      )}
+        {inProgress ? (
+          <>
+            <div className="actions">
+              <button className="light" onClick={() => onOpenSession(inProgress.id)}>Continuar</button>
+            </div>
+            <button className="hero-link" onClick={discard}>Descartar sesión en curso</button>
+          </>
+        ) : (
+          <>
+            <div className="actions">
+              <button className="light" onClick={() => start('full')}>Completa</button>
+              <button className="glass" onClick={() => start('short')}>Corta ⭐</button>
+            </div>
+            <label className="other">
+              Otra sesión
+              <select value={session} onChange={(e) => setChosen(e.target.value as SessionKey)}>
+                {options.map((k) => (
+                  <option key={k} value={k}>
+                    {SESSION_LABEL[k]}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </>
+        )}
+      </div>
 
-      <p className="label">Última sesión</p>
-      <p>
-        {last?.finishedAt
-          ? `${SESSION_LABEL[last.sessionKey]}, ${new Date(last.finishedAt).toLocaleDateString('es')}`
-          : 'Todavía no has terminado ninguna.'}
-      </p>
+      <div className="card">
+        <p className="label">Última sesión</p>
+        <p className="big-text">
+          {last?.finishedAt
+            ? `${SESSION_LABEL[last.sessionKey]} · ${new Date(last.finishedAt).toLocaleDateString('es')}`
+            : 'Todavía no has terminado ninguna'}
+        </p>
+      </div>
 
-      <button className="link" onClick={onOpenMeasurements}>
-        Registrar medidas
+      <button className="card row-button" onClick={onOpenMeasurements}>
+        <span>Registrar medidas</span>
+        <span aria-hidden="true">›</span>
       </button>
     </section>
   );

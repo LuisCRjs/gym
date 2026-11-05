@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Icon, type IconName } from './components/Icon';
 import { hasSettings } from './db/repo';
 import { Home } from './screens/Home';
 import { Measurements } from './screens/Measurements';
@@ -9,11 +10,11 @@ import { Welcome } from './screens/Welcome';
 
 type Tab = 'home' | 'measurements' | 'progress' | 'settings';
 
-const TABS: { id: Tab; label: string }[] = [
-  { id: 'home', label: 'Inicio' },
-  { id: 'measurements', label: 'Medidas' },
-  { id: 'progress', label: 'Progreso' },
-  { id: 'settings', label: 'Ajustes' },
+const TABS: { id: Tab; label: string; icon: IconName }[] = [
+  { id: 'home', label: 'Inicio', icon: 'home' },
+  { id: 'measurements', label: 'Medidas', icon: 'ruler' },
+  { id: 'progress', label: 'Progreso', icon: 'chart' },
+  { id: 'settings', label: 'Ajustes', icon: 'sliders' },
 ];
 
 export function App() {
@@ -45,7 +46,8 @@ export function App() {
 
   return (
     <>
-      <main>
+      {/* key = tab: al cambiar de pestaña la pantalla se vuelve a montar y entra con animación */}
+      <main key={tab}>
         {tab === 'home' ? (
           <Home onOpenMeasurements={() => setTab('measurements')} onOpenSession={setSessionId} />
         ) : tab === 'measurements' ? (
@@ -59,7 +61,8 @@ export function App() {
       <nav>
         {TABS.map((t) => (
           <button key={t.id} className={t.id === tab ? 'active' : ''} onClick={() => setTab(t.id)}>
-            {t.label}
+            <Icon name={t.icon} />
+            <span>{t.label}</span>
           </button>
         ))}
       </nav>
