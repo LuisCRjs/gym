@@ -82,7 +82,7 @@ export function getInProgressWorkout(): Promise<Workout | undefined> {
 }
 
 // ~55 sesiones en 12 semanas: leerlas todas es instantáneo.
-function getFinishedWorkouts(): Promise<Workout[]> {
+export function getFinishedWorkouts(): Promise<Workout[]> {
   return db.workouts.orderBy('finishedAt').reverse().toArray();
 }
 

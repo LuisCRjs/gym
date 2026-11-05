@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { hasSettings } from './db/repo';
 import { Home } from './screens/Home';
 import { Measurements } from './screens/Measurements';
+import { Progress } from './screens/Progress';
 import { Session } from './screens/Session';
 import { Settings } from './screens/Settings';
 import { Welcome } from './screens/Welcome';
@@ -52,7 +53,7 @@ export function App() {
         ) : tab === 'settings' ? (
           <Settings />
         ) : (
-          <h1>{TABS.find((t) => t.id === tab)?.label} (pendiente)</h1>
+          <Progress />
         )}
       </main>
       <nav>

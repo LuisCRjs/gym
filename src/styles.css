@@ -70,3 +70,6 @@ details { margin: 8px 0; color: #bbb; }
 /* Bienvenida */
 .steps { padding-left: 20px; line-height: 1.6; }
 .steps li { margin-bottom: 8px; }
+
+/* Progreso */
+.chart { position: relative; height: 200px; margin: 8px 0 16px; }

@@ -1,7 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import type { Entry, Exercise, TemplateSlot, Unit, Workout } from '../types.ts';
+import type { Entry, Exercise, Measurement, TemplateSlot, Unit, Workout } from '../types.ts';
 import { buildEntry, lastEntryFor, preferredExerciseId, slotsFor } from './entry.ts';
+import { exerciseSeries, measurementSeries, weeklyAverages } from './progress.ts';
 import { convertWeight } from './units.ts';
 import { nextSession } from './rotation.ts';
 import { isDeloadWeek, planWeek, setsForWeek } from './plan-week.ts';
@@ -147,4 +148,48 @@ test('entry: recuerda la opción elegida en esa misma sesión', () => {
   ];
   assert.equal(preferredExerciseId(s, hist, 'UPPER_A'), 'jalon');
   assert.equal(preferredExerciseId(s, [], 'UPPER_A'), 'dominadas');
+});
+
+const m = (date: string, type: Measurement['type'], value: number): Measurement => ({ id: date + type + value, date, type, value });
+const done = (exerciseId: string, unit: Unit, weight: number, values: number[]): Entry => ({
+  ...entry(weight, values, unit),
+  exerciseId,
+});
+const finished = (finishedAt: number, entries: Entry[]): Workout => ({ ...workout('UPPER_A', entries), finishedAt });
+
+test('progress: peso corporal promediado por semana del plan', () => {
+  const items = [m('2026-01-05', 'weight', 80), m('2026-01-07', 'weight', 81), m('2026-01-12', 'weight', 79), m('2026-01-06', 'waist', 85)];
+  assert.deepEqual(weeklyAverages(items, '2026-01-05'), [
+    { label: 'S1', value: 80.5 },
+    { label: 'S2', value: 79 },
+  ]);
+});
+
+test('progress: cintura en orden cronológico', () => {
+  const items = [m('2026-01-12', 'waist', 84), m('2026-01-05', 'waist', 85), m('2026-01-06', 'weight', 80)];
+  assert.deepEqual(measurementSeries(items, 'waist').map((p) => p.value), [85, 84]);
+});
+
+test('progress: ejercicio convierte kg/lb a la unidad más reciente', () => {
+  const day = (d: number) => new Date(2026, 0, d).getTime();
+  const hist = [finished(day(3), [done('a', 'lb', 110.2, [8])]), finished(day(1), [done('a', 'kg', 40, [8])])];
+  const s = exerciseSeries(hist, 'a')!;
+  assert.equal(s.unit, 'lb');
+  assert.deepEqual(s.points, [
+    { label: '2026-01-01', value: 88.2 },
+    { label: '2026-01-03', value: 110.2 },
+  ]);
+});
+
+test('progress: cambiar a barrita arranca una serie nueva', () => {
+  const hist = [finished(3, [done('a', 'pin', 7, [8])]), finished(1, [done('a', 'kg', 40, [8])])];
+  assert.deepEqual(exerciseSeries(hist, 'a')!.points.map((p) => p.value), [7]);
+});
+
+test('progress: peso corporal grafica las reps', () => {
+  const hist = [finished(2, [done('a', 'kg', 0, [8, 7])]), finished(1, [done('a', 'kg', 0, [6, 6])])];
+  const s = exerciseSeries(hist, 'a')!;
+  assert.equal(s.kind, 'value');
+  assert.deepEqual(s.points.map((p) => p.value), [6, 8]);
+  assert.equal(exerciseSeries(hist, 'otro'), null);
 });
