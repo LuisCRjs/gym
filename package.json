@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite --host",
     "build": "tsc && vite build",
-    "preview": "vite preview --host"
+    "preview": "vite preview --host",
+    "test": "node --test \"src/**/*.test.ts\""
   },
   "dependencies": {
     "dexie": "^4.4.7",
