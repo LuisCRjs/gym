@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { hasSettings } from './db/repo';
 import { Home } from './screens/Home';
 import { Measurements } from './screens/Measurements';
 import { Session } from './screens/Session';
 import { Settings } from './screens/Settings';
+import { Welcome } from './screens/Welcome';
 
 type Tab = 'home' | 'measurements' | 'progress' | 'settings';
 
@@ -16,6 +18,20 @@ const TABS: { id: Tab; label: string }[] = [
 export function App() {
   const [tab, setTab] = useState<Tab>('home');
   const [sessionId, setSessionId] = useState<string>();
+  const [firstRun, setFirstRun] = useState<boolean>();
+
+  useEffect(() => {
+    hasSettings().then((has) => setFirstRun(!has));
+  }, []);
+
+  if (firstRun === undefined) return null;
+  if (firstRun) {
+    return (
+      <main>
+        <Welcome onDone={() => setFirstRun(false)} />
+      </main>
+    );
+  }
 
   // La sesión ocupa toda la pantalla (sin navegación inferior).
   if (sessionId) {

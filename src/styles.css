@@ -66,3 +66,7 @@ details { margin: 8px 0; color: #bbb; }
 .file-button { display: block; padding: 18px; text-align: center; border-radius: 12px; background: #2a2a2a; }
 .file-button input { display: none; }
 .hint { color: #999; font-size: 0.85rem; }
+
+/* Bienvenida */
+.steps { padding-left: 20px; line-height: 1.6; }
+.steps li { margin-bottom: 8px; }

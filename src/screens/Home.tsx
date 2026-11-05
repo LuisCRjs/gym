@@ -9,6 +9,7 @@ import {
 import { isDeloadWeek, planWeek, todayISO } from '../domain/plan-week.ts';
 import { nextSession, SESSION_LABEL } from '../domain/rotation.ts';
 import type { SessionKey, Settings, Workout } from '../types';
+import { isStandalone } from './Welcome';
 
 const DAY_MS = 86_400_000;
 const BACKUP_WARN_DAYS = 7;
@@ -68,6 +69,11 @@ export function Home({ onOpenMeasurements, onOpenSession }: Props) {
             : `Semana ${week} de 12`}
       </h1>
 
+      {!isStandalone() && (
+        <p className="notice">
+          Instala la app para no perder datos: Compartir → Añadir a pantalla de inicio.
+        </p>
+      )}
       {isDeloadWeek(week) && (
         <p className="notice">Semana de descarga: mitad de series, mismo peso, sin subir.</p>
       )}

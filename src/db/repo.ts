@@ -14,8 +14,12 @@ export function getPlan(): Promise<Plan | undefined> {
   return db.plan.get(1);
 }
 
-// Si aún no hay ajustes (antes de la pantalla de Bienvenida), crea unos por defecto:
-// el plan arranca hoy y sin Upper C.
+// Sin ajustes guardados = primera vez que se abre la app (se muestra la Bienvenida).
+export async function hasSettings(): Promise<boolean> {
+  return (await db.settings.get(1)) !== undefined;
+}
+
+// Si aún no hay ajustes, crea unos por defecto: el plan arranca hoy y sin Upper C.
 export async function getSettings(): Promise<Settings> {
   const saved = await db.settings.get(1);
   if (saved) return saved;
