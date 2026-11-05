@@ -34,7 +34,28 @@ details { margin: 8px 0; color: #bbb; }
 .stepper small { font-size: 1rem; font-weight: 400; color: #999; }
 .primary { width: 100%; margin: 20px 0 12px; padding: 22px; font-size: 1.3rem; background: #16a34a; }
 .suggestion { margin: 12px 0 0; padding: 8px 12px; border-radius: 10px; background: #1e3a5f; font-size: 0.9rem; }
-.timer { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;
-  padding: 10px 14px; border-radius: 12px; background: #2a2a2a; font-size: 1.3rem; font-variant-numeric: tabular-nums; }
+/* Pantalla completa, por encima de la sesión. El botón va abajo, al alcance del pulgar. */
+.timer { position: fixed; inset: 0; z-index: 10; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; padding: 16px 16px calc(16px + env(safe-area-inset-bottom));
+  background: #111; font-variant-numeric: tabular-nums; }
 .timer.finished { background: #166534; }
-.timer button { padding: 8px 14px; font-size: 1rem; }
+.timer p { margin: 0; font-size: 1.4rem; color: #ddd; }
+.timer strong { font-size: 30vw; line-height: 1.1; }
+.timer-actions { position: absolute; left: 16px; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom));
+  display: flex; gap: 12px; }
+.timer-actions button { flex: 1; padding: 22px; font-size: 1.2rem; background: #2a2a2a; }
+.timer.finished button { background: #fff; color: #111; font-weight: 700; }
+/* Versión oculta: barra fija abajo; tocarla vuelve a la pantalla completa. */
+.timer-mini { position: fixed; z-index: 10; left: 16px; right: 16px; bottom: calc(12px + env(safe-area-inset-bottom));
+  padding: 16px; font-size: 1.2rem; font-variant-numeric: tabular-nums; background: #3b82f6; }
+.timer-mini.finished { background: #16a34a; }
+
+/* Medidas */
+.field { display: block; margin-top: 14px; color: #bbb; font-size: 0.9rem; }
+.field input { display: block; box-sizing: border-box; width: 100%; margin-top: 6px; padding: 14px;
+  font-size: 1.3rem; color: #eee; background: #2a2a2a; border: 0; border-radius: 10px; }
+.history { margin: 0; padding: 0; list-style: none; }
+.history li { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #222; }
+.history span:first-child { color: #999; font-variant-numeric: tabular-nums; }
+.history span:nth-child(2) { flex: 1; }
+.history button { padding: 8px 12px; background: none; color: #999; }

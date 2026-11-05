@@ -1,7 +1,7 @@
 import { db } from './db';
 import { buildEntry, entriesFor, lastEntryFor, preferredExerciseId, slotsFor } from '../domain/entry.ts';
 import { planWeek, setsForWeek, todayISO } from '../domain/plan-week.ts';
-import type { Entry, Plan, SessionKey, Settings, Workout } from '../types';
+import type { Entry, Measurement, Plan, SessionKey, Settings, Workout } from '../types';
 
 // plan.json es la fuente de verdad: se vuelve a copiar a la base en cada arranque.
 export async function syncPlan(): Promise<void> {
@@ -49,6 +49,18 @@ export async function saveWorkout(workout: Workout): Promise<void> {
 
 export async function deleteWorkout(id: string): Promise<void> {
   await db.workouts.delete(id);
+}
+
+export function getMeasurements(): Promise<Measurement[]> {
+  return db.measurements.orderBy('date').reverse().toArray();
+}
+
+export async function addMeasurement(date: string, type: Measurement['type'], value: number) {
+  await db.measurements.put({ id: newId(), date, type, value });
+}
+
+export async function deleteMeasurement(id: string): Promise<void> {
+  await db.measurements.delete(id);
 }
 
 export async function getEntryHistory(exerciseId: string): Promise<Entry[]> {

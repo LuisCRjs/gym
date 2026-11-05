@@ -25,6 +25,7 @@ export function Session({ workoutId, onExit }: { workoutId: string; onExit: () =
   const [deload, setDeload] = useState(false);
   const [history, setHistory] = useState<Entry[]>([]);
   const [restEndsAt, setRestEndsAt] = useState<number>();
+  const [restHidden, setRestHidden] = useState(false);
 
   useEffect(() => {
     Promise.all([getWorkout(workoutId), getPlan(), getSettings()]).then(([w, p, settings]) => {
@@ -76,6 +77,7 @@ export function Session({ workoutId, onExit }: { workoutId: string; onExit: () =
   const markDone = () => {
     setDone(active, true);
     setRestEndsAt(Date.now() + slot.restSec * 1000);
+    setRestHidden(false); // cada descanso nuevo arranca en pantalla completa
   };
 
   // Sugerencia en la unidad de la última sesión; si hoy usas otra (kg <-> lb) se convierte,
@@ -202,7 +204,15 @@ export function Session({ workoutId, onExit }: { workoutId: string; onExit: () =
         ✓ Serie hecha
       </button>
 
-      {restEndsAt && <RestTimer endsAt={restEndsAt} onSkip={() => setRestEndsAt(undefined)} />}
+      {restEndsAt && (
+        <RestTimer
+          endsAt={restEndsAt}
+          hidden={restHidden}
+          onHide={() => setRestHidden(true)}
+          onShow={() => setRestHidden(false)}
+          onClose={() => setRestEndsAt(undefined)}
+        />
+      )}
 
       <div className="actions">
         <button disabled={idx === 0} onClick={() => setIdx(idx - 1)}>← Anterior</button>
