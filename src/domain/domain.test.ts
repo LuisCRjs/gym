@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import type { Entry, Unit } from '../types.ts';
+import type { Entry, Exercise, TemplateSlot, Unit, Workout } from '../types.ts';
+import { buildEntry, lastEntryFor, preferredExerciseId, slotsFor } from './entry.ts';
 import { convertWeight } from './units.ts';
 import { nextSession } from './rotation.ts';
 import { isDeloadWeek, planWeek, setsForWeek } from './plan-week.ts';
@@ -79,4 +80,71 @@ test('progression: cambio de/hacia pin no cuenta como 2 sesiones seguidas', () =
 test('progression: peso corporal (0) no baja', () => {
   const bw = entry(0, [4, 4, 4]);
   assert.equal(suggest([bw, bw], false), null);
+});
+
+const slot = (order: number, short: boolean, exerciseIds = ['a']): TemplateSlot => ({
+  sessionKey: 'UPPER_A',
+  order,
+  exerciseIds,
+  sets: 3,
+  repMin: 6,
+  repMax: 8,
+  restSec: 60,
+  short,
+});
+const exercise: Exercise = {
+  id: 'a',
+  name: 'A',
+  metric: 'reps',
+  defaultUnit: 'pin',
+  defaultPerSide: false,
+};
+const workout = (sessionKey: Workout['sessionKey'], entries: Entry[]): Workout => ({
+  id: 'w',
+  sessionKey,
+  mode: 'full',
+  startedAt: 0,
+  finishedAt: 1,
+  entries,
+});
+
+test('entry: la versión corta solo trae los ⭐, en orden', () => {
+  const slots = [slot(2, true), slot(1, false), slot(3, true)];
+  assert.deepEqual(slotsFor(slots, 'UPPER_A', 'full').map((s) => s.order), [1, 2, 3]);
+  assert.deepEqual(slotsFor(slots, 'UPPER_A', 'short').map((s) => s.order), [2, 3]);
+  assert.deepEqual(slotsFor(slots, 'LOWER_A', 'full'), []);
+});
+
+test('entry: sin historial usa los valores por defecto del ejercicio', () => {
+  const e = buildEntry(slot(1, true), exercise, 3);
+  assert.equal(e.unit, 'pin');
+  assert.deepEqual(e.sets, Array(3).fill({ weight: 0, value: 6, done: false }));
+});
+
+test('entry: con historial precarga unidad, peso máximo y reps de la última vez', () => {
+  const last = entry(20, [8, 7, 6], 'lb');
+  const e = buildEntry(slot(1, true), exercise, 3, last);
+  assert.equal(e.unit, 'lb');
+  assert.deepEqual(e.sets.map((s) => [s.weight, s.value, s.done]), [
+    [20, 8, false],
+    [20, 7, false],
+    [20, 6, false],
+  ]);
+});
+
+test('entry: lastEntryFor ignora entradas sin series hechas', () => {
+  const empty: Entry = { ...entry(20, [8]), sets: [{ weight: 20, value: 8, done: false }] };
+  const real = entry(30, [8]);
+  assert.equal(lastEntryFor([workout('UPPER_A', [empty]), workout('UPPER_A', [real])], 'x'), real);
+  assert.equal(lastEntryFor([], 'x'), undefined);
+});
+
+test('entry: recuerda la opción elegida en esa misma sesión', () => {
+  const s = slot(1, true, ['dominadas', 'jalon']);
+  const hist = [
+    workout('LOWER_A', [{ ...entry(1, [1]), exerciseId: 'jalon' }]),
+    workout('UPPER_A', [{ ...entry(1, [1]), exerciseId: 'jalon' }]),
+  ];
+  assert.equal(preferredExerciseId(s, hist, 'UPPER_A'), 'jalon');
+  assert.equal(preferredExerciseId(s, [], 'UPPER_A'), 'dominadas');
 });

@@ -1,5 +1,11 @@
 import { useEffect, useState } from 'react';
-import { getInProgressWorkout, getLastFinishedWorkout, getSettings } from '../db/repo';
+import {
+  deleteWorkout,
+  getInProgressWorkout,
+  getLastFinishedWorkout,
+  getSettings,
+  startWorkout,
+} from '../db/repo';
 import { isDeloadWeek, planWeek, todayISO } from '../domain/plan-week.ts';
 import { nextSession, SESSION_LABEL } from '../domain/rotation.ts';
 import type { SessionKey, Settings, Workout } from '../types';
@@ -14,7 +20,12 @@ interface Data {
   inProgress?: Workout;
 }
 
-export function Home({ onOpenMeasurements }: { onOpenMeasurements: () => void }) {
+interface Props {
+  onOpenMeasurements: () => void;
+  onOpenSession: (workoutId: string) => void;
+}
+
+export function Home({ onOpenMeasurements, onOpenSession }: Props) {
   const [data, setData] = useState<Data>();
   const [chosen, setChosen] = useState<SessionKey>();
 
@@ -30,6 +41,17 @@ export function Home({ onOpenMeasurements }: { onOpenMeasurements: () => void })
   const week = planWeek(settings.planStartDate, todayISO());
   const session = chosen ?? nextSession(last?.sessionKey, settings.includeUpperC);
   const options = ALL_SESSIONS.filter((k) => k !== 'UPPER_C' || settings.includeUpperC);
+
+  async function start(mode: 'full' | 'short') {
+    const workout = await startWorkout(session, mode);
+    onOpenSession(workout.id);
+  }
+
+  async function discard() {
+    if (!inProgress || !confirm('¿Descartar la sesión en curso? Se pierden sus series.')) return;
+    await deleteWorkout(inProgress.id);
+    setData({ ...data!, inProgress: undefined });
+  }
 
   const backupDays = settings.lastBackupAt
     ? Math.floor((Date.now() - settings.lastBackupAt) / DAY_MS)
@@ -63,22 +85,31 @@ export function Home({ onOpenMeasurements }: { onOpenMeasurements: () => void })
       <p className="label">Siguiente sesión</p>
       <p className="session">{SESSION_LABEL[session]}</p>
 
-      {/* Las sesiones se pueden iniciar a partir del paso 5 (pantalla de Sesión). */}
-      <div className="actions">
-        <button disabled>Completa</button>
-        <button disabled>Corta ⭐</button>
-      </div>
-
-      <label className="other">
-        Elegir otra sesión:{' '}
-        <select value={session} onChange={(e) => setChosen(e.target.value as SessionKey)}>
-          {options.map((k) => (
-            <option key={k} value={k}>
-              {SESSION_LABEL[k]}
-            </option>
-          ))}
-        </select>
-      </label>
+      {inProgress ? (
+        <>
+          <div className="actions">
+            <button onClick={() => onOpenSession(inProgress.id)}>Continuar</button>
+          </div>
+          <button className="link" onClick={discard}>Descartar sesión en curso</button>
+        </>
+      ) : (
+        <>
+          <div className="actions">
+            <button onClick={() => start('full')}>Completa</button>
+            <button onClick={() => start('short')}>Corta ⭐</button>
+          </div>
+          <label className="other">
+            Elegir otra sesión:{' '}
+            <select value={session} onChange={(e) => setChosen(e.target.value as SessionKey)}>
+              {options.map((k) => (
+                <option key={k} value={k}>
+                  {SESSION_LABEL[k]}
+                </option>
+              ))}
+            </select>
+          </label>
+        </>
+      )}
 
       <p className="label">Última sesión</p>
       <p>

@@ -16,3 +16,20 @@ nav { position: fixed; bottom: 0; left: 0; right: 0; display: flex; background: 
   padding-bottom: env(safe-area-inset-bottom); }
 nav button { flex: 1; padding: 16px 0; border-radius: 0; background: none; color: #999; }
 nav button.active { color: #fff; font-weight: 600; }
+
+/* Sesión */
+.session-header { display: flex; justify-content: space-between; align-items: center; }
+.exercise-select { width: 100%; margin: 12px 0; padding: 12px; font-size: 1.3rem; font-weight: 700;
+  background: #2a2a2a; border: 0; border-radius: 10px; }
+details { margin: 8px 0; color: #bbb; }
+.chips { display: flex; gap: 8px; margin: 8px 0; }
+.chips button { flex: 1; padding: 12px 0; }
+.chips .active, .units .active { background: #3b82f6; }
+.chips .done { background: #166534; }
+.units { display: flex; gap: 8px; align-items: center; margin-top: 16px; }
+.units button { padding: 10px 14px; }
+.stepper > div { display: flex; align-items: center; gap: 12px; margin-top: 6px; }
+.stepper button { flex: 0 0 72px; padding: 18px 0; font-size: 1.6rem; }
+.stepper span { flex: 1; text-align: center; font-size: 2rem; font-weight: 700; }
+.stepper small { font-size: 1rem; font-weight: 400; color: #999; }
+.primary { width: 100%; margin: 20px 0 12px; padding: 22px; font-size: 1.3rem; background: #16a34a; }

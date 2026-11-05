@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Home } from './screens/Home';
+import { Session } from './screens/Session';
 
 type Tab = 'home' | 'measurements' | 'progress' | 'settings';
 
@@ -12,12 +13,22 @@ const TABS: { id: Tab; label: string }[] = [
 
 export function App() {
   const [tab, setTab] = useState<Tab>('home');
+  const [sessionId, setSessionId] = useState<string>();
+
+  // La sesión ocupa toda la pantalla (sin navegación inferior).
+  if (sessionId) {
+    return (
+      <main>
+        <Session workoutId={sessionId} onExit={() => setSessionId(undefined)} />
+      </main>
+    );
+  }
 
   return (
     <>
       <main>
         {tab === 'home' ? (
-          <Home onOpenMeasurements={() => setTab('measurements')} />
+          <Home onOpenMeasurements={() => setTab('measurements')} onOpenSession={setSessionId} />
         ) : (
           <h1>{TABS.find((t) => t.id === tab)?.label} (pendiente)</h1>
         )}
