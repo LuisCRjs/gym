@@ -1,7 +1,7 @@
 import { db } from './db';
 import { buildEntry, entriesFor, lastEntryFor, preferredExerciseId, slotsFor } from '../domain/entry.ts';
 import { planWeek, setsForWeek, todayISO } from '../domain/plan-week.ts';
-import type { Entry, Measurement, Plan, SessionKey, Settings, Workout } from '../types';
+import type { Backup, Entry, Measurement, Plan, SessionKey, Settings, Workout } from '../types';
 
 // plan.json es la fuente de verdad: se vuelve a copiar a la base en cada arranque.
 export async function syncPlan(): Promise<void> {
@@ -22,6 +22,49 @@ export async function getSettings(): Promise<Settings> {
   const defaults: Settings = { id: 1, planStartDate: todayISO(), includeUpperC: false };
   await db.settings.put(defaults);
   return defaults;
+}
+
+export async function updateSettings(patch: Partial<Omit<Settings, 'id'>>): Promise<Settings> {
+  const next = { ...(await getSettings()), ...patch };
+  await db.settings.put(next);
+  return next;
+}
+
+// ---------- Respaldo ----------
+const SCHEMA_VERSION = 1;
+
+export async function exportBackup(): Promise<Backup> {
+  const [settings, workouts, measurements] = await Promise.all([
+    getSettings(),
+    db.workouts.toArray(),
+    db.measurements.toArray(),
+  ]);
+  return { schemaVersion: SCHEMA_VERSION, exportedAt: Date.now(), settings, workouts, measurements };
+}
+
+// Revisión mínima antes de borrar nada: que tenga la forma esperada.
+export function parseBackup(data: unknown): Backup {
+  const b = data as Backup;
+  if (!b || typeof b !== 'object' || typeof b.schemaVersion !== 'number') {
+    throw new Error('El archivo no es un respaldo de Gym Tracker.');
+  }
+  if (b.schemaVersion > SCHEMA_VERSION) {
+    throw new Error('El respaldo es de una versión más nueva de la app. Actualízala primero.');
+  }
+  if (!b.settings || !Array.isArray(b.workouts) || !Array.isArray(b.measurements)) {
+    throw new Error('El respaldo está incompleto.');
+  }
+  return b;
+}
+
+// Reemplaza todo. La transacción garantiza que, si algo falla a mitad, no se borra nada.
+export async function importBackup(backup: Backup): Promise<void> {
+  await db.transaction('rw', db.workouts, db.measurements, db.settings, async () => {
+    await Promise.all([db.workouts.clear(), db.measurements.clear(), db.settings.clear()]);
+    await db.workouts.bulkPut(backup.workouts);
+    await db.measurements.bulkPut(backup.measurements);
+    await db.settings.put({ ...backup.settings, id: 1 });
+  });
 }
 
 // finishedAt está indexado; las sesiones sin terminar no entran al índice, así que

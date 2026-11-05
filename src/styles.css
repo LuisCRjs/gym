@@ -59,3 +59,10 @@ details { margin: 8px 0; color: #bbb; }
 .history span:first-child { color: #999; font-variant-numeric: tabular-nums; }
 .history span:nth-child(2) { flex: 1; }
 .history button { padding: 8px 12px; background: none; color: #999; }
+
+/* Ajustes */
+.toggle { display: flex; align-items: center; gap: 12px; margin-top: 20px; }
+.toggle input { width: 24px; height: 24px; }
+.file-button { display: block; padding: 18px; text-align: center; border-radius: 12px; background: #2a2a2a; }
+.file-button input { display: none; }
+.hint { color: #999; font-size: 0.85rem; }

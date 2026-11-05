@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Home } from './screens/Home';
 import { Measurements } from './screens/Measurements';
 import { Session } from './screens/Session';
+import { Settings } from './screens/Settings';
 
 type Tab = 'home' | 'measurements' | 'progress' | 'settings';
 
@@ -32,6 +33,8 @@ export function App() {
           <Home onOpenMeasurements={() => setTab('measurements')} onOpenSession={setSessionId} />
         ) : tab === 'measurements' ? (
           <Measurements />
+        ) : tab === 'settings' ? (
+          <Settings />
         ) : (
           <h1>{TABS.find((t) => t.id === tab)?.label} (pendiente)</h1>
         )}

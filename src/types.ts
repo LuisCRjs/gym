@@ -69,3 +69,13 @@ export interface Settings {
   includeUpperC: boolean;
   lastBackupAt?: number;
 }
+
+// ---------- RESPALDO ----------
+// La plantilla no va: se recarga de plan.json. schemaVersion permite migrar respaldos viejos.
+export interface Backup {
+  schemaVersion: number;
+  exportedAt: number;
+  settings: Settings;
+  workouts: Workout[];
+  measurements: Measurement[];
+}
