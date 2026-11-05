@@ -1,7 +1,17 @@
 import { useEffect, useState } from 'react';
+import { RestTimer } from '../components/RestTimer';
 import { Stepper } from '../components/Stepper';
-import { getLastEntry, getPlan, getWorkout, saveWorkout } from '../db/repo';
+import {
+  getEntryHistory,
+  getLastEntry,
+  getPlan,
+  getSettings,
+  getWorkout,
+  saveWorkout,
+} from '../db/repo';
 import { buildEntry, slotsFor } from '../domain/entry.ts';
+import { isDeloadWeek, planWeek, todayISO } from '../domain/plan-week.ts';
+import { suggest } from '../domain/progression.ts';
 import { SESSION_LABEL } from '../domain/rotation.ts';
 import { convertWeight, STEP } from '../domain/units.ts';
 import type { Entry, Plan, Unit, Workout } from '../types';
@@ -12,16 +22,26 @@ export function Session({ workoutId, onExit }: { workoutId: string; onExit: () =
   const [workout, setWorkout] = useState<Workout>();
   const [plan, setPlan] = useState<Plan>();
   const [idx, setIdx] = useState(0);
+  const [deload, setDeload] = useState(false);
+  const [history, setHistory] = useState<Entry[]>([]);
+  const [restEndsAt, setRestEndsAt] = useState<number>();
 
   useEffect(() => {
-    Promise.all([getWorkout(workoutId), getPlan()]).then(([w, p]) => {
+    Promise.all([getWorkout(workoutId), getPlan(), getSettings()]).then(([w, p, settings]) => {
       if (!w || !p) return onExit();
       setWorkout(w);
       setPlan(p);
+      setDeload(isDeloadWeek(planWeek(settings.planStartDate, todayISO())));
       // Retoma en el primer ejercicio con series pendientes.
       setIdx(Math.max(w.entries.findIndex((e) => e.sets.some((s) => !s.done)), 0));
     });
   }, [workoutId]);
+
+  // Historial del ejercicio mostrado, para la sugerencia de peso.
+  const exerciseId = workout?.entries[idx]?.exerciseId;
+  useEffect(() => {
+    if (exerciseId) getEntryHistory(exerciseId).then(setHistory);
+  }, [exerciseId]);
 
   if (!workout || !plan) return null;
 
@@ -51,6 +71,19 @@ export function Session({ workoutId, onExit }: { workoutId: string; onExit: () =
     updateEntry({ ...entry, sets: entry.sets.map((s, i) => (i === active ? { ...s, value } : s)) });
   const setDone = (i: number, done: boolean) =>
     updateEntry({ ...entry, sets: entry.sets.map((s, j) => (j === i ? { ...s, done } : s)) });
+
+  // Al marcar ✓ se guarda la serie y arranca el descanso del slot.
+  const markDone = () => {
+    setDone(active, true);
+    setRestEndsAt(Date.now() + slot.restSec * 1000);
+  };
+
+  // Sugerencia en la unidad de la última sesión; si hoy usas otra (kg <-> lb) se convierte,
+  // y si no hay equivalencia (barrita) no se muestra.
+  const suggestion = !anyDone ? suggest(history, deload) : null;
+  const suggestedWeight = suggestion
+    ? convertWeight(suggestion.weight, history[0].unit, entry.unit)
+    : null;
 
   const setUnit = (unit: Unit) =>
     updateEntry({
@@ -142,6 +175,14 @@ export function Session({ workoutId, onExit }: { workoutId: string; onExit: () =
         </label>
       </div>
 
+      {suggestion && suggestedWeight !== null && (
+        <p className="suggestion">
+          Sugerencia: {suggestion.kind === 'up' ? 'subir' : 'bajar'} a {suggestedWeight}{' '}
+          {UNIT_LABEL[entry.unit]}
+          {suggestion.kind === 'up' && ` y volver a ${suggestion.reps} reps`}
+        </p>
+      )}
+
       <Stepper
         label={entry.unit === 'pin' ? 'Barrita' : entry.perSide ? `Peso por lado (${entry.unit})` : `Peso (${entry.unit})`}
         value={current.weight}
@@ -157,9 +198,11 @@ export function Session({ workoutId, onExit }: { workoutId: string; onExit: () =
         onChange={setValue}
       />
 
-      <button className="primary" disabled={active === -1} onClick={() => setDone(active, true)}>
+      <button className="primary" disabled={active === -1} onClick={markDone}>
         ✓ Serie hecha
       </button>
+
+      {restEndsAt && <RestTimer endsAt={restEndsAt} onSkip={() => setRestEndsAt(undefined)} />}
 
       <div className="actions">
         <button disabled={idx === 0} onClick={() => setIdx(idx - 1)}>← Anterior</button>

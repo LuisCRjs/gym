@@ -7,13 +7,16 @@ export function slotsFor(slots: TemplateSlot[], sessionKey: SessionKey, mode: 'f
     .sort((a, b) => a.order - b.order);
 }
 
+// Entradas de un ejercicio con al menos una serie hecha, la más reciente primero.
 // `history` = sesiones terminadas, la más reciente primero.
+export function entriesFor(history: Workout[], exerciseId: string): Entry[] {
+  return history.flatMap((w) =>
+    w.entries.filter((e) => e.exerciseId === exerciseId && e.sets.some((s) => s.done)),
+  );
+}
+
 export function lastEntryFor(history: Workout[], exerciseId: string): Entry | undefined {
-  for (const w of history) {
-    const found = w.entries.find((e) => e.exerciseId === exerciseId && e.sets.some((s) => s.done));
-    if (found) return found;
-  }
-  return undefined;
+  return entriesFor(history, exerciseId)[0];
 }
 
 // Opción elegida la última vez en esta misma sesión; si no hay, la primera del slot.

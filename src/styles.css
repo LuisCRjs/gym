@@ -33,3 +33,8 @@ details { margin: 8px 0; color: #bbb; }
 .stepper span { flex: 1; text-align: center; font-size: 2rem; font-weight: 700; }
 .stepper small { font-size: 1rem; font-weight: 400; color: #999; }
 .primary { width: 100%; margin: 20px 0 12px; padding: 22px; font-size: 1.3rem; background: #16a34a; }
+.suggestion { margin: 12px 0 0; padding: 8px 12px; border-radius: 10px; background: #1e3a5f; font-size: 0.9rem; }
+.timer { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;
+  padding: 10px 14px; border-radius: 12px; background: #2a2a2a; font-size: 1.3rem; font-variant-numeric: tabular-nums; }
+.timer.finished { background: #166534; }
+.timer button { padding: 8px 14px; font-size: 1rem; }

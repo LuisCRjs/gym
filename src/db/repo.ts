@@ -1,5 +1,5 @@
 import { db } from './db';
-import { buildEntry, lastEntryFor, preferredExerciseId, slotsFor } from '../domain/entry.ts';
+import { buildEntry, entriesFor, lastEntryFor, preferredExerciseId, slotsFor } from '../domain/entry.ts';
 import { planWeek, setsForWeek, todayISO } from '../domain/plan-week.ts';
 import type { Entry, Plan, SessionKey, Settings, Workout } from '../types';
 
@@ -49,6 +49,10 @@ export async function saveWorkout(workout: Workout): Promise<void> {
 
 export async function deleteWorkout(id: string): Promise<void> {
   await db.workouts.delete(id);
+}
+
+export async function getEntryHistory(exerciseId: string): Promise<Entry[]> {
+  return entriesFor(await getFinishedWorkouts(), exerciseId);
 }
 
 export async function getLastEntry(exerciseId: string): Promise<Entry | undefined> {
