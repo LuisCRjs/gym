@@ -5,7 +5,8 @@ import type { Backup, Entry, Measurement, Plan, SessionKey, Settings, Workout } 
 
 // plan.json es la fuente de verdad: se vuelve a copiar a la base en cada arranque.
 export async function syncPlan(): Promise<void> {
-  const res = await fetch('/plan.json');
+  // BASE_URL = '/gym/' en GitHub Pages (la app vive en una subruta), '/' en local.
+  const res = await fetch(`${import.meta.env.BASE_URL}plan.json`);
   const { exercises, slots } = await res.json();
   await db.plan.put({ id: 1, exercises, slots });
 }

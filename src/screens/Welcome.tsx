@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { updateSettings } from '../db/repo';
 import { todayISO } from '../domain/plan-week.ts';
 
+const ICON = `${import.meta.env.BASE_URL}icon-192.png`;
+
 // La app corre "instalada" (abierta desde el ícono). `navigator.standalone` es la versión de iOS.
 export function isStandalone(): boolean {
   return (
@@ -25,7 +27,7 @@ export function Welcome({ onDone }: { onDone: () => void }) {
   if (step === 'install') {
     return (
       <section>
-        <img className="brand-icon" src="/icon-192.png" alt="" width="88" height="88" />
+        <img className="brand-icon" src={ICON} alt="" width="88" height="88" />
         <h1>Instala Gym Tracker</h1>
         <p className="muted">Para que tus datos no se borren, úsala desde la pantalla de inicio:</p>
         <ol className="card steps">
@@ -52,7 +54,7 @@ export function Welcome({ onDone }: { onDone: () => void }) {
 
   return (
     <section>
-      <img className="brand-icon" src="/icon-192.png" alt="" width="88" height="88" />
+      <img className="brand-icon" src={ICON} alt="" width="88" height="88" />
       <h1>Bienvenido</h1>
       <p className="muted">Dos datos y empiezas.</p>
       <div className="card">
