@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { connect, disconnect, isConnected } from '../cloud/dropbox';
 import { getCloudSyncedAt, restoreFromCloud, syncNow } from '../cloud/sync';
+import { Button } from '../components/ui/button';
 import { saveBackup } from '../db/backup-file';
 import {
   clearUndoBackup,
@@ -207,9 +208,9 @@ export function Settings() {
               ? 'Almacenamiento protegido: iOS no debería borrar tus datos.'
               : 'Almacenamiento no garantizado: exporta respaldos con frecuencia.'}
         </p>
-        <button className="primary" onClick={exportData}>
+        <Button variant="primary" onClick={exportData}>
           Exportar respaldo
-        </button>
+        </Button>
         <label className="file-button">
           Importar respaldo
           <input type="file" accept="application/json,.json" onChange={(e) => importData(e.target)} />
@@ -230,9 +231,9 @@ export function Settings() {
             <p className="hint">
               {cloudAt ? `Última copia en la nube: ${new Date(cloudAt).toLocaleString('es')}` : 'Aún no hay copia en la nube.'}
             </p>
-            <button className="primary" disabled={cloudBusy} onClick={syncDropbox}>
+            <Button variant="primary" disabled={cloudBusy} onClick={syncDropbox}>
               {cloudBusy ? 'Un momento…' : 'Subir copia ahora'}
-            </button>
+            </Button>
             <button className="file-button" disabled={cloudBusy} onClick={restoreDropbox}>
               Restaurar desde Dropbox
             </button>
@@ -241,7 +242,7 @@ export function Settings() {
         ) : (
           <>
             <p className="hint">Se sube sola al abrir la app después de terminar una sesión.</p>
-            <button className="primary" onClick={connectDropbox}>Conectar Dropbox</button>
+            <Button variant="primary" onClick={connectDropbox}>Conectar Dropbox</Button>
           </>
         )}
       </div>
@@ -249,14 +250,14 @@ export function Settings() {
       <div className="card">
         <p className="label">Aplicación</p>
         <p className="big-text">Versión {APP_VERSION}</p>
-        <button className="primary" disabled={checking} onClick={checkUpdate}>
+        <Button variant="primary" disabled={checking} onClick={checkUpdate}>
           {checking ? 'Buscando…' : 'Buscar actualización'}
-        </button>
+        </Button>
         {update && <p className="hint">{update.status}</p>}
         {update?.ready && (
-          <button className="primary success" onClick={() => applyUpdate(update.ready!)}>
+          <Button variant="success" onClick={() => applyUpdate(update.ready!)}>
             Actualizar ahora
-          </button>
+          </Button>
         )}
       </div>
     </section>

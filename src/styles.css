@@ -1,4 +1,20 @@
 /* ============ Sistema de diseño: oscuro, colorido, estilo Apple Fitness ============ */
+/* Tailwind sin preflight: no resetea los estilos actuales. Las capas de Tailwind van antes,
+   así que el CSS de este archivo (sin capa) siempre gana mientras se migra pantalla por pantalla. */
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+
+/* Mismos colores que las variables de :root, para usarlos como clases de Tailwind (bg-card, text-muted…). */
+@theme {
+  --color-card: #1c1c1e;
+  --color-card-2: #2c2c2e;
+  --color-muted: #8e8e93;
+  --color-blue: #3b82f6;
+  --color-green: #30d158;
+  --color-red: #ff453a;
+  --color-orange: #ff9f0a;
+}
+
 :root {
   color-scheme: dark;
   --bg: #000;

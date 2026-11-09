@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
+import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
   // GitHub Pages sirve el proyecto en https://luiscrjs.github.io/gym/ (subruta = nombre del repo).
@@ -8,6 +9,7 @@ export default defineConfig({
   base: '/gym/',
   plugins: [
     react(),
+    tailwindcss(),
     VitePWA({
       // 'prompt': la versión nueva espera a que el usuario toque "Actualizar" (ver UpdatePrompt).
       registerType: 'prompt',
