@@ -10,6 +10,7 @@ import {
 import { isDeloadWeek, planWeek, todayISO } from '../domain/plan-week.ts';
 import { nextSession, SESSION_LABEL } from '../domain/rotation.ts';
 import type { SessionKey, Settings, Workout } from '../types';
+import { APP_VERSION } from '../version';
 import { isStandalone } from './Welcome';
 
 const DAY_MS = 86_400_000;
@@ -140,6 +141,8 @@ export function Home({ onOpenMeasurements, onOpenSession }: Props) {
         <span>Registrar medidas</span>
         <span aria-hidden="true">›</span>
       </button>
+
+      <p className="app-version">Gym Tracker · v{APP_VERSION}</p>
     </section>
   );
 }

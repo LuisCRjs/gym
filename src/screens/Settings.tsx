@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { exportBackup, getSettings, importBackup, parseBackup, updateSettings } from '../db/repo';
 import { todayISO } from '../domain/plan-week.ts';
 import type { Settings as SettingsData } from '../types';
+import { APP_VERSION } from '../version';
 
 const DAY_MS = 86_400_000;
 
@@ -15,14 +16,53 @@ function download(file: File) {
   setTimeout(() => URL.revokeObjectURL(url), 1000); // Safari cancela la descarga si se revoca al instante
 }
 
+// Espera a que un service worker termine de instalarse (o falle).
+const settled = (sw: ServiceWorker) =>
+  new Promise<void>((resolve) => {
+    sw.addEventListener('statechange', () => sw.state !== 'installing' && resolve());
+  });
+
 export function Settings() {
   const [settings, setSettings] = useState<SettingsData>();
+  const [update, setUpdate] = useState<{ status: string; ready?: ServiceWorker }>();
+  const [checking, setChecking] = useState(false);
 
   useEffect(() => {
     getSettings().then(setSettings);
   }, []);
 
   if (!settings) return null;
+
+  // Pide al navegador revisar si hay un service worker nuevo. Si lo hay, queda esperando:
+  // se aplica con "Actualizar ahora" (o con el aviso de la app).
+  async function checkUpdate() {
+    setChecking(true);
+    setUpdate({ status: 'Buscando…' });
+    try {
+      const reg = await navigator.serviceWorker?.getRegistration();
+      if (!reg) {
+        setUpdate({ status: 'Solo se puede buscar en la app instalada con conexión.' });
+        return;
+      }
+      await reg.update();
+      if (reg.installing) await settled(reg.installing);
+      setUpdate(
+        reg.waiting
+          ? { status: 'Hay una versión nueva.', ready: reg.waiting }
+          : { status: 'Ya tienes la última versión.' },
+      );
+    } catch {
+      setUpdate({ status: 'No se pudo buscar. Revisa tu conexión.' });
+    } finally {
+      setChecking(false);
+    }
+  }
+
+  // Manda al nuevo service worker a activarse; al cambiar de controlador se recarga la app.
+  function applyUpdate(sw: ServiceWorker) {
+    navigator.serviceWorker.addEventListener('controllerchange', () => location.reload(), { once: true });
+    sw.postMessage({ type: 'SKIP_WAITING' });
+  }
 
   const change = async (patch: Partial<SettingsData>) => setSettings(await updateSettings(patch));
 
@@ -106,6 +146,20 @@ export function Settings() {
           <input type="file" accept="application/json,.json" onChange={(e) => importData(e.target)} />
         </label>
         <p className="hint">Importar reemplaza todos los datos actuales de este teléfono.</p>
+      </div>
+
+      <div className="card">
+        <p className="label">Aplicación</p>
+        <p className="big-text">Versión {APP_VERSION}</p>
+        <button className="primary" disabled={checking} onClick={checkUpdate}>
+          {checking ? 'Buscando…' : 'Buscar actualización'}
+        </button>
+        {update && <p className="hint">{update.status}</p>}
+        {update?.ready && (
+          <button className="primary success" onClick={() => applyUpdate(update.ready!)}>
+            Actualizar ahora
+          </button>
+        )}
       </div>
     </section>
   );
