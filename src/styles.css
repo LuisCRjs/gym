@@ -148,9 +148,9 @@ input.switch:checked::after { transform: translateX(20px); }
 .file-button input { display: none; }
 
 /* ---------- Anillos ---------- */
-.ring { position: relative; flex: none; }
-.ring, .ring svg, .ring-svg:focus, .ring-svg:focus-visible { outline: none; border: 0; }
-.ring svg { display: block; }
+.progress-ring { position: relative; flex: none; }
+.progress-ring, .progress-ring svg, .ring-svg:focus, .ring-svg:focus-visible { outline: none; border: 0; }
+.progress-ring svg { display: block; }
 .ring-fill { transition: stroke-dashoffset 0.9s var(--ease); }
 .ring-fill.linear { transition: stroke-dashoffset 0.3s linear; }
 .ring-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
@@ -202,7 +202,7 @@ input.switch:checked::after { transform: translateX(20px); }
   background: radial-gradient(circle at 50% 35%, #0f2a52, #000 70%); animation: rise 0.3s var(--ease) both;
 }
 .timer.finished { background: radial-gradient(circle at 50% 35%, #146c2e, #03180a 75%); }
-.timer.finished .ring { animation: celebrate 1s ease-in-out infinite; }
+.timer.finished .progress-ring { animation: celebrate 1s ease-in-out infinite; }
 .timer .ring-center strong { font-size: clamp(3.2rem, 20vw, 5.2rem); font-weight: 800; }
 .timer .ring-center p { margin-top: 6px; color: #aab; font-size: 1.1rem; }
 .timer-actions { position: absolute; left: 16px; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom)); display: flex; gap: 12px; }
