@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Button } from '../components/ui/button';
 import { addMeasurement, deleteMeasurement, getMeasurements } from '../db/repo';
 import { todayISO } from '../domain/plan-week.ts';
 import type { Measurement } from '../types';
@@ -54,9 +55,9 @@ export function Measurements() {
             <input type="number" inputMode="decimal" step="any" value={waist} onChange={(e) => setWaist(e.target.value)} />
           </label>
         </div>
-        <button className="primary" disabled={!weight && !waist} onClick={save}>
+        <Button variant="primary" disabled={!weight && !waist} onClick={save}>
           Guardar
-        </button>
+        </Button>
       </div>
 
       <p className="label">Historial</p>
@@ -71,7 +72,7 @@ export function Measurements() {
               <strong>
                 {m.value} {UNIT[m.type]}
               </strong>
-              <button className="icon-btn" aria-label="Borrar" onClick={() => remove(m)}>✕</button>
+              <Button variant="danger" aria-label="Borrar" onClick={() => remove(m)}>✕</Button>
             </li>
           ))}
         </ul>

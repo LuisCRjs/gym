@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { connect, disconnect, isConnected } from '../cloud/dropbox';
 import { getCloudSyncedAt, restoreFromCloud, syncNow } from '../cloud/sync';
-import { Button } from '../components/ui/button';
+import { Button, buttonVariants } from '../components/ui/button';
+import { cn } from '../lib/utils';
 import { saveBackup } from '../db/backup-file';
 import {
   clearUndoBackup,
@@ -211,14 +212,14 @@ export function Settings() {
         <Button variant="primary" onClick={exportData}>
           Exportar respaldo
         </Button>
-        <label className="file-button">
+        <label className={cn(buttonVariants({ variant: 'secondary' }), 'cursor-pointer [&_input]:hidden')}>
           Importar respaldo
           <input type="file" accept="application/json,.json" onChange={(e) => importData(e.target)} />
         </label>
         {undo && (
-          <button className="file-button" onClick={undoImport}>
+          <Button variant="secondary" onClick={undoImport}>
             Deshacer última importación ({dateOf(undo.exportedAt)})
-          </button>
+          </Button>
         )}
         <p className="hint">Importar reemplaza todos los datos actuales de este teléfono.</p>
       </div>
@@ -234,10 +235,10 @@ export function Settings() {
             <Button variant="primary" disabled={cloudBusy} onClick={syncDropbox}>
               {cloudBusy ? 'Un momento…' : 'Subir copia ahora'}
             </Button>
-            <button className="file-button" disabled={cloudBusy} onClick={restoreDropbox}>
+            <Button variant="secondary" disabled={cloudBusy} onClick={restoreDropbox}>
               Restaurar desde Dropbox
-            </button>
-            <button className="link" onClick={disconnectDropbox}>Desconectar</button>
+            </Button>
+            <Button variant="link" onClick={disconnectDropbox}>Desconectar</Button>
           </>
         ) : (
           <>
