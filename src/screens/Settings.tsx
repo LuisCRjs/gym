@@ -1,20 +1,21 @@
 import { useEffect, useState } from 'react';
-import { exportBackup, getSettings, importBackup, parseBackup, updateSettings } from '../db/repo';
-import { todayISO } from '../domain/plan-week.ts';
+import { saveBackup } from '../db/backup-file';
+import {
+  clearUndoBackup,
+  exportBackup,
+  getSettings,
+  getUndoBackup,
+  importBackup,
+  parseBackup,
+  saveUndoBackup,
+  updateSettings,
+} from '../db/repo';
+import { summarizeBackup } from '../domain/backup.ts';
 import type { Settings as SettingsData } from '../types';
 import { APP_VERSION } from '../version';
 
 const DAY_MS = 86_400_000;
-
-// Sin Web Share (o fuera de HTTPS) se descarga el archivo con un enlace temporal.
-function download(file: File) {
-  const url = URL.createObjectURL(file);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = file.name;
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1000); // Safari cancela la descarga si se revoca al instante
-}
+const dateOf = (ms: number) => new Date(ms).toLocaleDateString('es');
 
 // Espera a que un service worker termine de instalarse (o falle).
 const settled = (sw: ServiceWorker) =>
@@ -26,9 +27,11 @@ export function Settings() {
   const [settings, setSettings] = useState<SettingsData>();
   const [update, setUpdate] = useState<{ status: string; ready?: ServiceWorker }>();
   const [checking, setChecking] = useState(false);
+  const [persisted, setPersisted] = useState<boolean>();
 
   useEffect(() => {
     getSettings().then(setSettings);
+    navigator.storage?.persisted?.().then(setPersisted);
   }, []);
 
   if (!settings) return null;
@@ -66,39 +69,51 @@ export function Settings() {
 
   const change = async (patch: Partial<SettingsData>) => setSettings(await updateSettings(patch));
 
-  // Web Share API: abre la hoja de "Compartir" de iOS, desde donde se puede guardar
-  // en Archivos / iCloud Drive. Si se cancela, no cuenta como respaldo.
   async function exportData() {
-    const backup = await exportBackup();
-    const file = new File([JSON.stringify(backup)], `gym-tracker-${todayISO()}.json`, {
-      type: 'application/json',
-    });
     try {
-      if (navigator.canShare?.({ files: [file] })) await navigator.share({ files: [file] });
-      else download(file);
-    } catch (e) {
-      if ((e as Error).name === 'AbortError') return;
+      if (await saveBackup()) setSettings(await getSettings());
+    } catch {
       alert('No se pudo exportar el respaldo.');
-      return;
     }
-    change({ lastBackupAt: Date.now() });
   }
 
+  // Antes de reemplazar: muestra qué trae el archivo frente a lo que hay ahora, y guarda
+  // una copia de lo actual para poder deshacer.
   async function importData(input: HTMLInputElement) {
     const file = input.files?.[0];
     input.value = ''; // permite volver a elegir el mismo archivo
     if (!file) return;
     try {
       const backup = parseBackup(JSON.parse(await file.text()));
-      const date = new Date(backup.exportedAt).toLocaleDateString('es');
-      if (!confirm(`Esto reemplaza TODOS tus datos por el respaldo del ${date}. ¿Continuar?`)) return;
+      const incoming = summarizeBackup(backup.workouts);
+      const current = summarizeBackup((await exportBackup()).workouts);
+      const ok = confirm(
+        `Respaldo del ${dateOf(backup.exportedAt)}:\n` +
+          `• ${incoming.finished} sesiones terminadas` +
+          (incoming.lastFinishedAt ? ` (la última: ${dateOf(incoming.lastFinishedAt)})` : '') +
+          `\n\nEn este teléfono ahora hay ${current.finished} sesiones terminadas.\n\n` +
+          'Se guardará una copia de lo actual y podrás deshacerlo. ¿Reemplazar todo?',
+      );
+      if (!ok) return;
+      await saveUndoBackup();
       await importBackup(backup);
       setSettings(await getSettings());
-      alert('Respaldo importado.');
+      alert('Respaldo importado. Puedes deshacerlo abajo.');
     } catch (e) {
       alert(e instanceof SyntaxError ? 'El archivo no es un JSON válido.' : (e as Error).message);
     }
   }
+
+  async function undoImport() {
+    const previous = getUndoBackup();
+    if (!previous || !confirm(`Volver a los datos de antes de la importación (respaldo del ${dateOf(previous.exportedAt)})?`)) return;
+    await importBackup(previous);
+    clearUndoBackup();
+    setSettings(await getSettings());
+    alert('Importación deshecha.');
+  }
+
+  const undo = getUndoBackup();
 
   const days = settings.lastBackupAt
     ? Math.floor((Date.now() - settings.lastBackupAt) / DAY_MS)
@@ -138,6 +153,13 @@ export function Settings() {
               ? 'Último respaldo: hoy'
               : `Último respaldo: hace ${days} día${days === 1 ? '' : 's'}`}
         </p>
+        <p className="hint">
+          {persisted === undefined
+            ? ''
+            : persisted
+              ? 'Almacenamiento protegido: iOS no debería borrar tus datos.'
+              : 'Almacenamiento no garantizado: exporta respaldos con frecuencia.'}
+        </p>
         <button className="primary" onClick={exportData}>
           Exportar respaldo
         </button>
@@ -145,6 +167,11 @@ export function Settings() {
           Importar respaldo
           <input type="file" accept="application/json,.json" onChange={(e) => importData(e.target)} />
         </label>
+        {undo && (
+          <button className="file-button" onClick={undoImport}>
+            Deshacer última importación ({dateOf(undo.exportedAt)})
+          </button>
+        )}
         <p className="hint">Importar reemplaza todos los datos actuales de este teléfono.</p>
       </div>
 

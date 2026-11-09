@@ -62,6 +62,23 @@ export function parseBackup(data: unknown): Backup {
   return b;
 }
 
+// Copia de los datos justo antes de una importación, para poder deshacerla. Vive en
+// localStorage (es pequeña) y se borra al deshacer. Si el guardado falla, no se importa.
+const UNDO_KEY = 'gym-tracker-undo-import';
+
+export async function saveUndoBackup(): Promise<void> {
+  localStorage.setItem(UNDO_KEY, JSON.stringify(await exportBackup()));
+}
+
+export function getUndoBackup(): Backup | undefined {
+  const raw = localStorage.getItem(UNDO_KEY);
+  return raw ? (JSON.parse(raw) as Backup) : undefined;
+}
+
+export function clearUndoBackup(): void {
+  localStorage.removeItem(UNDO_KEY);
+}
+
 // Reemplaza todo. La transacción garantiza que, si algo falla a mitad, no se borra nada.
 export async function importBackup(backup: Backup): Promise<void> {
   await db.transaction('rw', db.workouts, db.measurements, db.settings, async () => {

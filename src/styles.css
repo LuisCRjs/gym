@@ -71,6 +71,9 @@ details.card p { margin-top: 10px; color: #c7c7cc; line-height: 1.45; }
 .notice { margin: 12px 0 0; padding: 12px 16px; border-radius: 18px; font-size: 0.9rem; line-height: 1.35; }
 .notice.info { background: rgba(59, 130, 246, 0.16); color: #93c5fd; }
 .notice.warn { background: rgba(255, 159, 10, 0.16); color: #ffc15a; }
+.notice.stale { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.notice.stale p { margin: 0; }
+.notice.warn button { flex: none; padding: 8px 12px; border-radius: 12px; font-size: 0.85rem; font-weight: 700; color: #111; background: #ffc15a; }
 
 /* ---------- Botones ---------- */
 button {
