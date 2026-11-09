@@ -18,14 +18,28 @@
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+/* App a pantalla completa: el documento no se mueve; solo scrollea el contenido de cada pantalla. */
+html, body { height: 100%; margin: 0; overflow: hidden; overscroll-behavior: none; }
 body {
-  margin: 0;
   background: var(--bg);
   color: var(--text);
   font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
-main { max-width: 520px; margin: 0 auto; padding: calc(20px + env(safe-area-inset-top)) 16px calc(120px + env(safe-area-inset-bottom)); }
+input, select, textarea { -webkit-user-select: text; user-select: text; }
+#root { display: flex; flex-direction: column; height: 100%; height: 100dvh; }
+
+/* Contenedor de pantalla: único elemento que scrollea. El rebote de iOS queda solo aquí. */
+main.scroll {
+  flex: 1 1 auto; min-height: 0; width: 100%; max-width: 520px; margin: 0 auto;
+  overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
+  padding: calc(20px + env(safe-area-inset-top)) 16px 16px;
+}
+main.scroll--session { padding-bottom: 0; }
 h1 { margin: 0 0 4px; font-size: 1.9rem; font-weight: 800; letter-spacing: -0.02em; line-height: 1.15; }
 p { margin: 0; }
 .muted { color: var(--muted); }
@@ -36,7 +50,7 @@ p { margin: 0; }
 
 /* ---------- Entrada de pantallas ---------- */
 @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
-@keyframes slide-in { from { opacity: 0; transform: translateX(28px); } to { opacity: 1; transform: none; } }
+@keyframes slide-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 @keyframes pop { 0% { transform: scale(0.6); } 60% { transform: scale(1.15); } 100% { transform: scale(1); } }
 @keyframes bump { 0% { transform: scale(0.85); opacity: 0.5; } 100% { transform: none; opacity: 1; } }
 @keyframes glow { 0%, 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.55); } 50% { box-shadow: 0 0 0 9px rgba(59, 130, 246, 0); } }
@@ -154,8 +168,12 @@ input.switch:checked::after { transform: translateX(20px); }
 .stepper .label { margin-bottom: 0; }
 .stepper span { font-size: 2.6rem; font-weight: 800; font-variant-numeric: tabular-nums; animation: bump 0.2s var(--ease); }
 .stepper small { font-size: 1rem; font-weight: 500; color: var(--muted); }
-/* Anterior / Siguiente quedan fijos abajo; el degradado tapa el contenido que pasa por detrás. */
-section > .actions { position: sticky; bottom: 0; margin: 16px -16px 0; padding: 24px 16px calc(12px + env(safe-area-inset-bottom)); background: linear-gradient(transparent, var(--bg) 35%); }
+/* Pie fijo de la sesión: temporizador oculto (si aplica) + Anterior / Siguiente. Fondo sólido para que nada se vea encimado. */
+.session-footer {
+  position: sticky; bottom: 0; z-index: 4; margin: 0 -16px; padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+  background: var(--bg);
+}
+.session-footer .actions { margin-top: 0; }
 
 /* ---------- Temporizador de descanso ---------- */
 .timer {
@@ -170,9 +188,9 @@ section > .actions { position: sticky; bottom: 0; margin: 16px -16px 0; padding:
 .timer-actions { position: absolute; left: 16px; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom)); display: flex; gap: 12px; }
 .timer-actions button { flex: 1; padding: 22px; font-size: 1.1rem; font-weight: 600; background: rgba(255, 255, 255, 0.14); }
 .timer-actions .light { background: #fff; color: #111; font-weight: 700; }
-/* Versión oculta: barra fija abajo; tocarla vuelve a la pantalla completa. */
+/* Versión oculta: barra dentro del pie de la sesión, encima de Anterior/Siguiente; tocarla vuelve a la pantalla completa. */
 .timer-mini {
-  position: fixed; z-index: 10; left: 16px; right: 16px; bottom: calc(12px + env(safe-area-inset-bottom));
+  display: block; width: 100%; margin-bottom: 12px;
   padding: 18px; font-size: 1.15rem; font-weight: 700; font-variant-numeric: tabular-nums;
   background: var(--grad); box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4); animation: rise 0.3s var(--ease) both;
 }
@@ -201,8 +219,8 @@ section > .actions { position: sticky; bottom: 0; margin: 16px -16px 0; padding:
 
 /* ---------- Navegación inferior flotante ---------- */
 nav {
-  position: fixed; z-index: 5; left: 16px; right: 16px; bottom: calc(12px + env(safe-area-inset-bottom));
-  max-width: 488px; margin: 0 auto; display: flex; padding: 6px; border-radius: 30px;
+  flex: none; position: relative; z-index: 5; width: calc(100% - 32px); max-width: 488px; margin: 0 auto calc(10px + env(safe-area-inset-bottom));
+  display: flex; padding: 6px; border-radius: 30px;
   background: rgba(28, 28, 30, 0.82); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
 }
