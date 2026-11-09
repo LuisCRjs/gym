@@ -7,6 +7,8 @@ import {
   getSettings,
   startWorkout,
 } from '../db/repo';
+import { saveBackup } from '../db/backup-file';
+import { backupIsStale } from '../domain/backup.ts';
 import { isDeloadWeek, planWeek, todayISO } from '../domain/plan-week.ts';
 import { nextSession, SESSION_LABEL } from '../domain/rotation.ts';
 import type { SessionKey, Settings, Workout } from '../types';
@@ -60,6 +62,16 @@ export function Home({ onOpenMeasurements, onOpenSession }: Props) {
     ? Math.floor((Date.now() - settings.lastBackupAt) / DAY_MS)
     : undefined;
   const backupOverdue = last && (backupDays === undefined || backupDays >= BACKUP_WARN_DAYS);
+  // Sesión terminada después del último respaldo: se ofrece guardar uno en un toque.
+  const stale = backupIsStale(settings.lastBackupAt, last?.finishedAt);
+
+  async function saveNow() {
+    try {
+      if (await saveBackup()) setData({ ...data!, settings: await getSettings() });
+    } catch {
+      alert('No se pudo guardar el respaldo.');
+    }
+  }
 
   const inPlan = week >= 1 && week <= 12;
   const title = week < 1 ? 'Aún no empieza' : week > 12 ? 'Plan terminado' : `Semana ${week} de 12`;
@@ -91,10 +103,17 @@ export function Home({ onOpenMeasurements, onOpenSession }: Props) {
       {isDeloadWeek(week) && (
         <p className="notice warn">Semana de descarga: mitad de series, mismo peso, sin subir.</p>
       )}
-      {backupOverdue && (
-        <p className="notice warn">
-          {backupDays === undefined ? 'Aún no has hecho un respaldo.' : `Último respaldo hace ${backupDays} días.`}
-        </p>
+      {stale ? (
+        <div className="notice warn stale">
+          <p>Terminaste una sesión sin respaldo.</p>
+          <button onClick={saveNow}>Guardar respaldo</button>
+        </div>
+      ) : (
+        backupOverdue && (
+          <p className="notice warn">
+            {backupDays === undefined ? 'Aún no has hecho un respaldo.' : `Último respaldo hace ${backupDays} días.`}
+          </p>
+        )
       )}
 
       <div className="card hero">

@@ -7,6 +7,7 @@ import { convertWeight } from './units.ts';
 import { nextSession } from './rotation.ts';
 import { isDeloadWeek, planWeek, setsForWeek } from './plan-week.ts';
 import { suggest } from './progression.ts';
+import { backupIsStale, summarizeBackup } from './backup.ts';
 
 // Entrada de prueba: rango 6-8, todas las series hechas con los `values` dados.
 const entry = (weight: number, values: number[], unit: Unit = 'kg'): Entry => ({
@@ -192,4 +193,30 @@ test('progress: peso corporal grafica las reps', () => {
   assert.equal(s.kind, 'value');
   assert.deepEqual(s.points.map((p) => p.value), [6, 8]);
   assert.equal(exerciseSeries(hist, 'otro'), null);
+});
+
+// ---------- Respaldos ----------
+
+
+const session = (id: string, finishedAt?: number): Workout => ({
+  id, sessionKey: 'UPPER_A', mode: 'full', startedAt: 1, finishedAt, entries: [],
+});
+
+test('backup: resume cuántas sesiones terminadas trae y la más reciente', () => {
+  const s = summarizeBackup([session('a', 100), session('b', 300), session('c', 200), session('d')]);
+  assert.equal(s.finished, 3);
+  assert.equal(s.inProgress, true);
+  assert.equal(s.lastFinishedAt, 300);
+});
+
+test('backup: sin sesiones terminadas no hay fecha', () => {
+  const s = summarizeBackup([]);
+  assert.deepEqual(s, { finished: 0, inProgress: false, lastFinishedAt: undefined });
+});
+
+test('backup: se considera viejo si hay una sesión después del último respaldo', () => {
+  assert.equal(backupIsStale(undefined, 100), true);
+  assert.equal(backupIsStale(200, 100), false);
+  assert.equal(backupIsStale(50, 100), true);
+  assert.equal(backupIsStale(50, undefined), false);
 });
