@@ -1,232 +1,259 @@
-# CLAUDE.md — Gym Tracker (proyecto Hefesto)
+# CLAUDE.md — Gym Tracker (Hefesto project)
 
-PWA personal para registrar entrenamiento de gym y medidas corporales durante un plan Upper/Lower de 12 semanas. La rutina original está en `docs/rutina-gym-upper-lower.md`.
-
----
-
-## 1. Cómo trabajar en este proyecto
-
-- Actúa como socio de desarrollo: si ves un hueco, una contradicción o una complicación innecesaria, dilo antes de programar.
-- El dueño estudia Ingeniería en Sistemas (3er semestre) y mantiene el proyecto solo. **Prefiere siempre la solución más simple.** Si propones algo complejo, justifícalo.
-- Cuando uses un concepto o API que quizá no domine (IndexedDB, service workers, Web Share API, hooks de Dexie, etc.), explícalo en 2-3 líneas, lo justo para mantenerlo.
-- Trabaja en pasos pequeños y verificables. Un paso = algo que se puede probar en el celular.
-- **No rediseñes lo que está en "Decidido"** (sección 9) sin que se pida. Si un cambio afecta algo decidido, señálalo explícitamente.
-- No agregues pantallas, módulos, dependencias ni features fuera de este documento sin preguntar.
-- Código listo para usar, sin relleno. Responde en español; el código (nombres de variables, tipos) en inglés.
+Personal PWA to log gym workouts and body measurements during a 12-week Upper/Lower plan. The original routine is in `docs/rutina-gym-upper-lower.md` (in Spanish).
 
 ---
 
-## 2. Contexto de uso
+## 1. How to work on this project
 
-- Uso principal: **iPhone, en el gym**, con una mano, entre series.
-- Prioridad: **ahorrar datos**. Offline es deseable, no obligatorio.
-- Usuarios: el dueño y quizá un amigo. **Cada quien en su propio teléfono = sus propios datos.** No hay cuentas ni login.
+- Act as a development partner: if you see a gap, a contradiction, or unnecessary complexity, say so before coding.
+- The owner studies Systems Engineering and maintains the project alone. **Prefer the simplest solution.** If you propose something complex, justify it.
+- When you use a concept or API the owner may not know (IndexedDB, service workers, Web Share API, Dropbox OAuth), explain it in 2–3 lines, just enough to follow.
+- Work in small, verifiable steps. One step = something that can be tested on the phone.
+- **Do not redesign what is in "Decided"** (section 9) unless asked. If a change affects a decided item, call it out explicitly.
+- Do not add screens, modules, dependencies, or features outside this document without asking.
+- Ready-to-use code, no filler. Talk to the owner in Spanish. Code, identifiers, commits, pull requests, and documentation are in English. UI text stays in Spanish.
+
+---
+
+## 2. Usage context
+
+- Main use: **iPhone, at the gym**, one-handed, between sets.
+- Priority: **work offline** and **do not use data**. Everything runs on the phone.
+- Users: the owner and maybe one friend. **Each person on their own phone = their own data.** No accounts, no login on the app itself.
 
 ---
 
 ## 3. Stack
 
-| Pieza | Elección |
+| Part | Choice |
 |---|---|
 | Base | Vite + React + TypeScript |
-| Datos | Dexie.js (envoltorio de IndexedDB) |
-| PWA | vite-plugin-pwa (manifest + service worker, precache de la app) |
-| Gráficas | uPlot o Chart.js: elegir la más ligera que cubra líneas simples |
-| Hosting | Estático gratis (Cloudflare Pages, Netlify o GitHub Pages) |
-| Backend | **Ninguno.** Plan B futuro: Supabase o Firebase |
+| Data | Dexie.js (IndexedDB wrapper), read and written only through `src/db/` |
+| PWA | vite-plugin-pwa (manifest + service worker, precached app, `registerType: 'prompt'`) |
+| Charts | Chart.js |
+| Backup | Dropbox (app folder, OAuth PKCE, no client secret) |
+| Hosting | GitHub Pages, deployed by GitHub Actions on push to `main` |
+| Backend | **None.** |
 
-Mantener dependencias al mínimo. Nada de librerías de UI pesadas, routers complejos ni gestores de estado globales si React + hooks alcanzan.
+Keep dependencies to a minimum. No heavy UI libraries, complex routers, or global state managers while React and hooks are enough.
 
 ---
 
-## 4. Estructura del proyecto (propuesta inicial)
+## 4. Project structure
 
 ```
 public/
-  plan.json            # plantilla de la rutina (ejercicios + slots)
+  plan.json              # routine template (exercises + slots), copied into IndexedDB on every start
 src/
-  db/                  # ÚNICO lugar que toca Dexie (capa de guardado)
-    db.ts              # definición de tablas
-    repo.ts            # funciones: saveWorkout, getLastWorkout, addMeasurement...
-  domain/              # lógica pura, sin React ni Dexie (fácil de probar)
-    rotation.ts        # siguiente sesión
-    progression.ts     # sugerencia de subir/bajar peso
-    plan-week.ts       # semana del plan, descarga
-    units.ts           # conversión kg/lb, STEP
-  screens/             # Welcome, Home, Session, Measurements, Progress, Settings
-  components/          # botones +/−, temporizador, etc.
+  cloud/                 # Dropbox connection (dropbox.ts) and automatic sync (sync.ts)
+  db/                    # ONLY place that touches Dexie
+    db.ts                # table definitions and migration notes
+    repo.ts              # saveWorkout, getLastEntry, importBackup, undo copy...
+    backup-file.ts       # save a backup file via the iOS share sheet
+  domain/                # pure logic, no React or Dexie (easy to test)
+    rotation.ts          # next session
+    progression.ts       # weight up/down suggestion
+    plan-week.ts         # plan week, deload
+    units.ts             # kg/lb conversion, STEP
+    backup.ts            # backup summary, staleness
+    entry.ts, progress.ts
+  screens/               # Welcome, Home, Session, Measurements, Progress, Settings
+  components/            # steppers, rest timer, rings, update prompt, charts
+  version.ts             # APP_VERSION, shown in Ajustes and Inicio
 ```
 
-**Regla clave:** las pantallas nunca llaman a Dexie directamente; usan `db/repo.ts`. Así, migrar a Supabase (Plan B) solo cambia esa carpeta.
+**Key rule:** screens never call Dexie directly; they use `src/db/repo.ts`. Moving to another storage would only change that folder.
 
 ---
 
-## 5. Modelo de datos
+## 5. Data model
 
 ```ts
-// ---------- PLANTILLA (se carga una vez desde plan.json) ----------
+// ---------- TEMPLATE (loaded once from plan.json) ----------
 type SessionKey = 'UPPER_A' | 'LOWER_A' | 'UPPER_B' | 'LOWER_B' | 'UPPER_C';
-type Unit = 'kg' | 'lb' | 'pin';   // pin = "barrita": posición de placa en máquinas sin peso marcado
+type Unit = 'kg' | 'lb' | 'pin';   // pin = "barrita": plate position on machines without a marked weight
 
 interface Exercise {
   id: string;                      // 'press-plano'
-  name: string;                    // 'Press plano con barra'
-  metric: 'reps' | 'seconds';      // plancha = seconds
-  defaultUnit: Unit;               // kg en barra/mancuernas, pin en máquinas y poleas
-  defaultPerSide: boolean;         // true en barra con discos
-  unilateral?: boolean;            // reps por pierna/brazo (búlgara)
+  name: string;
+  metric: 'reps' | 'seconds';      // plank = seconds
+  defaultUnit: Unit;
+  defaultPerSide: boolean;         // true for barbell with plates
+  unilateral?: boolean;            // reps per leg/arm (split squat)
 }
 
 interface TemplateSlot {
   sessionKey: SessionKey;
   order: number;                   // 1..7
-  exerciseIds: string[];           // 1 o más opciones (dominadas | jalón)
+  exerciseIds: string[];           // 1 or more options
   sets: number;
   repMin: number;
   repMax: number;
   restSec: number;
-  short: boolean;                  // ⭐ entra en la versión corta
-  note?: string;                   // técnica
+  short: boolean;                  // part of the short session
+  note?: string;
 }
 
-// ---------- REGISTROS ----------
+// ---------- RECORDS ----------
 interface Workout {
   id: string;
   sessionKey: SessionKey;
   mode: 'full' | 'short';
-  startedAt: number;               // timestamp ms
-  finishedAt?: number;             // vacío = sesión en curso
-  entries: Entry[];                // embebidas (decisión, ver abajo)
+  startedAt: number;               // ms timestamp
+  finishedAt?: number;             // undefined = session in progress
+  entries: Entry[];                // embedded on purpose
 }
 
 interface Entry {
-  exerciseId: string;              // la opción elegida
-  unit: Unit;                      // copia de lo usado ese día
-  perSide: boolean;                // copia de lo usado ese día
-  repMin: number;                  // copia de la plantilla ese día
+  exerciseId: string;              // chosen option
+  unit: Unit;                      // copy of what was used that day
+  perSide: boolean;
+  repMin: number;                  // copy of the template that day
   repMax: number;
-  sets: { weight: number; value: number; done: boolean }[];  // value = reps o segundos
+  sets: { weight: number; value: number; done: boolean }[];  // value = reps or seconds
 }
 
 interface Measurement {
   id: string;
   date: string;                    // 'YYYY-MM-DD'
   type: 'weight' | 'waist';
-  value: number;                   // kg o cm
+  value: number;                   // kg or cm
 }
 
-// ---------- AJUSTES (una sola fila) ----------
+// ---------- SETTINGS (one row) ----------
 interface Settings {
-  planStartDate: string;           // 'YYYY-MM-DD', define la semana 1
+  planStartDate: string;           // 'YYYY-MM-DD', defines week 1
   includeUpperC: boolean;
   lastBackupAt?: number;
 }
 
-// ---------- CONSTANTES (en código, no en la base) ----------
+// ---------- CONSTANTS (in code, not in the database) ----------
 const STEP: Record<Unit, number> = { kg: 2.5, lb: 5, pin: 1 };
 const KG_TO_LB = 2.2046;
 ```
 
-**Tablas Dexie:** `workouts`, `measurements`, `settings`, `plan` (ejercicios + slots).
+**Dexie tables:** `workouts`, `measurements`, `settings`, `plan`.
 
-**Por qué `entries` va embebido en `Workout`:** ~55 sesiones en 12 semanas; recorrerlas todas es instantáneo. Cada sesión es un solo objeto, el respaldo JSON es trivial y no hay joins. No normalizar.
+**Local-only values (not in the backup):** the Dropbox refresh token, the time of the last cloud upload, and the undo copy. They live in `localStorage` on each phone.
 
-**Principios del modelo:**
-1. La rutina es **dato** (plan.json), no código.
-2. Los registros **copian** lo esencial de la plantilla (rango de reps, unidad) para que cambiar la plantilla no rompa el historial.
-3. **Lo calculable no se guarda** (siguiente sesión, semana, descarga, sugerencias, promedios, última opción elegida).
+**Why `entries` is embedded in `Workout`:** about 55 sessions in 12 weeks; reading them all is instant. Each session is one object, the JSON backup is trivial, and there are no joins. Do not normalize.
+
+**Model principles:**
+1. The routine is **data** (`plan.json`), not code.
+2. Records **copy** what matters from the template (rep range, unit) so changing the template does not break history.
+3. **Anything calculable is not stored** (next session, week, deload, suggestions, averages, last chosen option).
 
 ---
 
-## 6. Reglas de dominio
+## 6. Domain rules
 
-| Qué | Regla |
+| Topic | Rule |
 |---|---|
-| **Siguiente sesión** | Toma la última `Workout` terminada y avanza en el ciclo `UPPER_A → LOWER_A → UPPER_B → LOWER_B → (UPPER_C si includeUpperC) → UPPER_A`. Sin historial: `UPPER_A`. Faltar no "recupera" nada. Una sesión corta cuenta igual que una completa. |
-| **Sesión en curso** | Si existe una `Workout` sin `finishedAt`, Inicio ofrece continuarla. |
-| **Semana del plan** | `floor((hoy − planStartDate) / 7 días) + 1`, por calendario. |
-| **Descarga** | Semanas 6 y 12: mitad de series (redondeo hacia arriba), mismo peso, **sin** sugerencia de subir peso. Inicio lo avisa. |
-| **Semanas 1-2** | Adaptación: la app puede mostrar "3 en reserva" como recordatorio. Sin lógica extra. |
-| **Versión corta** | Solo slots con `short = true`. |
-| **Valores precargados** | Cada ejercicio precarga unidad, perSide, peso y reps de la última `Entry` de ese ejercicio. Sin historial: valores por defecto del `Exercise`. |
-| **Opción de slot** | Precarga la opción elegida la última vez en esa misma `sessionKey` (se deduce del historial). |
-| **Subir peso** | Si en la última sesión del ejercicio **todas** las series llegaron a `repMax` → sugerir `peso + STEP[unit]` y volver a `repMin`. |
-| **Bajar peso** | Si falló `repMin` en 2 sesiones seguidas → sugerir bajar 5-10% (en `pin`: −1). |
-| **Cambio de unidad** | kg ↔ lb se convierte en historial y gráficas. `pin` no se convierte: si un ejercicio cambia hacia o desde `pin`, la gráfica arranca una serie nueva y no hay sugerencia hasta tener una sesión en la unidad nueva. |
-| **Peso corporal** | Peso 0 = peso corporal (dominadas). Valor positivo = lastre. |
-| **Peso semanal** | Se registra cuando sea (diario); la gráfica muestra el promedio por semana. |
-| **Cintura** | Registro semanal. |
+| **Next session** | Take the last finished `Workout` and advance in the cycle `UPPER_A → LOWER_A → UPPER_B → LOWER_B → (UPPER_C if includeUpperC) → UPPER_A`. No history: `UPPER_A`. Missing a session does not "recover" anything. A short session counts the same as a full one. |
+| **Session in progress** | If a `Workout` has no `finishedAt`, Home offers to continue it. |
+| **Plan week** | `floor((today − planStartDate) / 7 days) + 1`, by calendar. |
+| **Deload** | Weeks 6 and 12: half the sets (rounded up), same weight, **no** weight-up suggestion. Home warns about it. |
+| **Weeks 1–2** | Adaptation: the app may show "3 in reserve" as a reminder. No extra logic. |
+| **Short version** | Only slots with `short = true`. |
+| **Preloaded values** | Each exercise preloads unit, perSide, weight, and reps from its last `Entry`. No history: the `Exercise` defaults. |
+| **Chosen option** | Preloads the option chosen last time in the same `sessionKey` (inferred from history). |
+| **Weight up** | If in the last session of an exercise **all** sets reached `repMax` → suggest `weight + STEP[unit]` and go back to `repMin`. |
+| **Weight down** | If `repMin` was missed in 2 consecutive sessions → suggest lowering 5–10% (in `pin`: −1). |
+| **Unit change** | kg ↔ lb converts in history and charts. `pin` does not convert: moving an exercise to or from `pin` starts a new chart series and there is no suggestion until a session in the new unit exists. |
+| **Bodyweight** | Weight 0 = bodyweight (pull-ups). Positive value = added load. |
+| **Body weight log** | Logged whenever (daily); the chart shows the weekly average. |
+| **Waist** | Logged weekly. |
+| **Backup staleness** | A backup is "stale" when a session finished after the last backup. Home then offers to save one. |
+| **Cloud upload safety** | A phone with zero finished sessions never uploads, so an empty database cannot replace a good cloud copy. |
 
 ---
 
-## 7. Pantallas
+## 7. Screens
 
-Navegación inferior: **Inicio · Medidas · Progreso · Ajustes.** La pantalla de Sesión se abre desde Inicio.
+Bottom navigation: **Inicio · Medidas · Progreso · Ajustes.** The Session screen opens from Home.
 
-| Pantalla | Contenido | Claves de uso |
+| Screen | Content | Usage notes |
 |---|---|---|
-| **Bienvenida** (solo la primera vez) | Guía para instalar en iOS (Compartir → Añadir a pantalla de inicio), fecha de inicio del plan, ¿incluir Upper C? | Detectar si ya corre instalada (`display-mode: standalone`) y, si no, insistir en instalar. |
-| **Inicio** | Semana X de 12, siguiente sesión, botones **Completa** / **Corta ⭐**, enlace pequeño para elegir otra sesión, última sesión hecha, avisos (descarga, respaldo atrasado, sesión en curso), acceso rápido a medidas. | Un toque para empezar. |
-| **Sesión** | Un ejercicio por pantalla: nombre, serie N/M, rango de reps, nota de técnica colapsable, selector de opción si el slot tiene varias, peso con +/− y selector kg/lb/barrita, reps (o segundos) con +/−, botón ✓, temporizador de descanso, sugerencia de peso en una línea, anterior/siguiente. | Botones grandes. **Guardar cada serie al marcar ✓** (no al final). El temporizador arranca solo al marcar ✓. |
-| **Medidas** | Registrar peso y cintura (fecha = hoy por defecto) + historial con opción de borrar. | Dos campos y un botón. |
-| **Progreso** | Gráficas: cintura, peso (promedio semanal), progresión por ejercicio (selector de ejercicio). | Ligero. |
-| **Ajustes** | Exportar / importar respaldo, fecha del último respaldo, incluir Upper C, fecha de inicio del plan. | Exportar con Web Share API. |
+| **Welcome** (first run only) | Install guide for iOS (Share → Add to Home Screen), plan start date, include Upper C? | Detect standalone mode (`display-mode: standalone`) and insist on installing if not. |
+| **Home** | Week X of 12, next session, **Completa** / **Corta ⭐** buttons, small link to pick another session, last session, notices (deload, stale backup, session in progress), quick link to measurements, app version. | One tap to start. |
+| **Session** | One exercise per screen: name, set N/M, rep range, collapsible technique note, option picker when a slot has several, weight with +/−, unit picker kg/lb/barrita, reps (or seconds) with +/−, ✓ button, rest timer, weight suggestion line, previous/next. | Large buttons. **Save every set when ✓ is tapped** (not at the end). The rest timer starts on ✓. |
+| **Measurements** | Log weight and waist (date = today by default) + history with delete. | Two fields and a button. |
+| **Progress** | Charts: waist, weight (weekly average), progression per exercise (exercise picker). | Lightweight. |
+| **Settings** | Export / import backup, last backup date, Dropbox connection (connect, upload now, restore, disconnect), persistent-storage status, app version and "check for update", include Upper C, plan start date. | Import shows a summary of the file and keeps an undo copy. |
 
-**Temporizador:** guardar la hora de fin (`endsAt`) y calcular lo restante contra `Date.now()`, no contar con `setInterval`, para que no se desfase si la app pasa a segundo plano. En iOS **no** suena ni vibra con la pantalla bloqueada; en v1 es solo visual.
+**Timer:** store the end time (`endsAt`) and compute the remaining time against `Date.now()`, do not count with `setInterval`, so it does not drift when the app goes to the background. On iOS it does **not** sound or vibrate with the screen locked; v1 is visual only.
 
----
-
-## 8. iOS y almacenamiento
-
-- Safari puede borrar el almacenamiento tras ~7 días sin visitar el sitio, **salvo que la PWA esté instalada** en la pantalla de inicio.
-- Mitigación:
-  1. Bienvenida con guía de instalación.
-  2. Exportar respaldo JSON con Web Share API (guardar en Archivos / iCloud). Si Web Share no está disponible, descargar el archivo.
-  3. Aviso en Inicio: "Último respaldo hace X días" (umbral sugerido: 7).
-  4. Importar respaldo desde archivo.
-- Formato del respaldo: `{ schemaVersion, exportedAt, settings, workouts, measurements }`. `schemaVersion` permite migrar respaldos viejos si el modelo cambia.
-- La plantilla (`plan`) no va en el respaldo: se recarga de `plan.json`.
+**Layout:** the document does not scroll. Each screen scrolls inside `main.scroll`, and the tab bar is part of the flex column. Do not reintroduce fixed or sticky bars that overlap the session buttons.
 
 ---
 
-## 9. Estado
+## 8. iOS, storage, and updates
 
-### Decidido
-- PWA local-first, sin backend ni cuentas; un teléfono = un usuario.
-- Stack de la sección 3.
-- Modelo de datos de la sección 5 (incluye `entries` embebidas y unidades por ejercicio).
-- Peso en barra registrado **por lado**; sin cálculo de total barra + discos.
-- Unidades kg / lb / barrita (`pin`) por ejercicio, recordadas desde el historial.
-- Catálogo de ejercicios **fijo en v1**, cargado desde `plan.json`, sin pantalla de edición.
-- Semana del plan y descarga **por calendario**.
-- Las 5 pantallas + bienvenida de la sección 7.
-- Respaldo JSON + Web Share API + aviso de último respaldo.
-- Sin fotos, sin comidas, sin notificaciones push, sin temporizador en segundo plano.
-- Gráficas con **Chart.js**.
-- Importar respaldo **reemplaza todo** (con confirmación previa).
-- Nombre provisional de la app: **Gym Tracker**.
-- Node se instala con **nvm** (por usuario, sin sudo).
+- Safari may delete a site's storage after ~7 days without visits, **unless the PWA is installed** on the home screen. The app requests `navigator.storage.persist()` at startup and shows the result in Settings; iOS may still refuse.
+- Protection layers:
+  1. Welcome screen with the install guide.
+  2. Export a JSON backup with the Web Share API (save to Files / iCloud Drive). If Web Share is unavailable, download the file.
+  3. Automatic Dropbox copy after finished sessions (see section 8.1).
+  4. Home warns when a session was finished without a backup, and when the last backup is 7+ days old.
+  5. Import from file, with a confirmation that summarizes the file and an undo copy.
+- Backup format: `{ schemaVersion, exportedAt, settings, workouts, measurements }`. `schemaVersion` allows migrating old backups when the model changes. Importing a backup **replaces all data**.
+- The template (`plan`) is not in the backup: it is reloaded from `plan.json`.
 
-### Pendiente
-- Diseño visual (se define con la pantalla de Sesión funcionando).
-- Verificar si los datos creados en Safari pasan a la PWA instalada (probablemente no).
-- Hosting (decidir en el paso 10; afecta `base` en Vite).
+### 8.1 Dropbox
 
-### Ideas (no construir sin pedirlo)
-- Sincronización con Supabase / Firebase.
-- Aviso de descanso con pantalla bloqueada.
+- Uses the **App folder** permission (only `files.content.read` and `files.content.write`), so the app sees only its own folder.
+- OAuth **PKCE** with `token_access_type=offline`: the refresh token does not expire, so there is no hourly re-login. The access token is cached in memory only.
+- One file, `/gym-tracker.json`, overwritten on each upload. Dropbox keeps the version history.
+- The connection finishes at startup in `src/main.tsx`, because Dropbox returns to the root URL.
+- If the refresh token is revoked, the app disconnects and asks the user to reconnect.
+- Known risk: on iOS, the sign-in may open in Safari, and the PKCE verifier lives in the PWA's storage. If the return lands in a different storage, the connection fails with a message.
+
+### 8.2 Updates
+
+- The service worker uses `registerType: 'prompt'`. A new version is downloaded and waits.
+- `UpdatePrompt` shows **Actualizar** / **Después**. "Después" silences the prompt only for the running version.
+- Settings → **Buscar actualización** asks the browser to check and offers **Actualizar ahora** when a version is waiting.
+- The app never reloads on its own during a session. Each set is already saved in IndexedDB.
+
+### 8.3 Changing the data model
+
+- **Never change a published Dexie version.** Add `db.version(n + 1)` with an `.upgrade()` that transforms existing records. The migration steps are written in `src/db/db.ts`.
+- Bump `schemaVersion` in `repo.ts` when the backup format changes, and keep importing older files.
+- Every migration needs a test that opens a database from the previous version.
 
 ---
 
-## 10. Plan de trabajo
+## 9. Status
 
-1. Convertir `docs/rutina-gym-upper-lower.md` a `public/plan.json` y validar el modelo contra la rutina real.
-2. Scaffolding: Vite + React + TS + Dexie + vite-plugin-pwa; tablas y carga de `plan.json`.
-3. `domain/`: rotación, semana/descarga, progresión, unidades (con pruebas simples).
-4. Pantalla **Inicio** con siguiente sesión.
-5. Pantalla **Sesión** (registro serie por serie + temporizador). Probar en el iPhone.
-6. **Medidas**.
-7. **Ajustes** + respaldo exportar/importar.
-8. **Bienvenida** + guía de instalación.
-9. **Progreso** (gráficas).
-10. Deploy y prueba real en el gym.
+### Decided
+- PWA, local-first. Everything works offline on the phone. Dropbox is an optional copy, not a server.
+- No backend, no accounts. One phone = one user.
+- Data model in section 5 (`entries` embedded, units per exercise).
+- Weight on a barbell is recorded **per side**; no total-weight calculation (bar + plates).
+- Units kg / lb / barrita (`pin`) per exercise, remembered from history.
+- Exercise catalog **fixed in v1**, loaded from `plan.json`, no editing screen.
+- Plan week and deload are **calendar-based**.
+- Five screens + welcome, section 7.
+- JSON backup + Web Share API + backup-staleness warning + Dropbox copy.
+- Charts with **Chart.js**.
+- Importing a backup **replaces everything**, after a summary and confirmation. Undo is available until the next import.
+- Provisional app name: **Gym Tracker**.
+- Node is installed with **nvm** (per user, no sudo).
+
+### Done
+- Plan template, domain logic with tests, all screens, backup and import, Dropbox copy, update prompt, data-safety features.
+
+### Ideas (do not build without asking)
+- Sync with several devices, or a sharing feature for a friend.
+- Rest-timer alert with the screen locked (needs a native app).
+- Tailwind / shadcn/ui for the interface (optional, screen by screen).
+
+---
+
+## 10. Process
+
+- Branch from `main` for every change: `feat/...`, `fix/...`, `chore/...`, or `docs/...`.
+- Commit messages, PR titles, and PR descriptions in English.
+- **Every merge is a new version.** Bump `APP_VERSION` in `src/version.ts` in the same PR (`1.04` → `1.05`, and so on), then after merging create an annotated tag `vX.YY` on the merge commit and a GitHub release with the same version.
+- Before merging: `npm run build` and `npm test` must pass. Features that depend on iOS (install, update, Dropbox sign-in) are verified on the phone after publishing.
