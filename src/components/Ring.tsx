@@ -25,7 +25,7 @@ export function Ring({ value, size = 120, stroke = 14, from = '#3b82f6', to = '#
   const clamped = Math.min(1, Math.max(0, shown));
 
   return (
-    <div className="ring" style={{ width: `min(${size}px, 80vw)`, aspectRatio: '1' }}>
+    <div className="progress-ring" style={{ width: `min(${size}px, 80vw)`, aspectRatio: '1' }}>
       {/* Decorativo: no es enfocable ni debe dibujar contorno (Safari marcaba el cuadro del SVG). */}
       <svg viewBox={`0 0 ${size} ${size}`} width="100%" height="100%" focusable="false" aria-hidden="true" className="ring-svg">
         <defs>
