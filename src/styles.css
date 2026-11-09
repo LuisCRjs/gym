@@ -149,6 +149,7 @@ input.switch:checked::after { transform: translateX(20px); }
 
 /* ---------- Anillos ---------- */
 .ring { position: relative; flex: none; }
+.ring, .ring svg, .ring-svg:focus, .ring-svg:focus-visible { outline: none; border: 0; }
 .ring svg { display: block; }
 .ring-fill { transition: stroke-dashoffset 0.9s var(--ease); }
 .ring-fill.linear { transition: stroke-dashoffset 0.3s linear; }
