@@ -1,3 +1,10 @@
 node_modules
 dist
 dev-dist
+
+# Personal files at the project root: backups and screenshots must never be committed.
+/gym-tracker-*.json
+/pasted*
+/*.png
+/*.jpg
+/*.jpeg
