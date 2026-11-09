@@ -1,6 +1,9 @@
 /* ============ Sistema de diseño: oscuro, colorido, estilo Apple Fitness ============ */
 /* Tailwind sin preflight: no resetea los estilos actuales. Las capas de Tailwind van antes,
    así que el CSS de este archivo (sin capa) siempre gana mientras se migra pantalla por pantalla. */
+/* Orden explícito de capas: lo último gana. base < utilities, así las utilidades de Tailwind
+   siempre pueden sobrescribir los estilos base (como el de <button>). */
+@layer theme, base, components, utilities;
 @import "tailwindcss/theme.css" layer(theme);
 @import "tailwindcss/utilities.css" layer(utilities);
 
@@ -92,13 +95,17 @@ details.card p { margin-top: 10px; color: #c7c7cc; line-height: 1.45; }
 .notice.warn button { flex: none; padding: 8px 12px; border-radius: 12px; font-size: 0.85rem; font-weight: 700; color: #111; background: #ffc15a; }
 
 /* ---------- Botones ---------- */
-button {
-  font: inherit; color: inherit; border: 0; border-radius: 18px; padding: 16px 18px;
-  background: var(--card-2); cursor: pointer; touch-action: manipulation;
-  transition: transform 0.15s var(--ease), filter 0.15s, opacity 0.2s, background 0.2s;
+/* En una capa "base": las utilidades de Tailwind (capa utilities) pueden sobrescribirla.
+   Sin capa, esta regla global ganaría a cualquier clase de Tailwind aplicada a un botón. */
+@layer base {
+  button {
+    font: inherit; color: inherit; border: 0; border-radius: 18px; padding: 16px 18px;
+    background: var(--card-2); cursor: pointer; touch-action: manipulation;
+    transition: transform 0.15s var(--ease), filter 0.15s, opacity 0.2s, background 0.2s;
+  }
+  button:active:not(:disabled) { transform: scale(0.95); filter: brightness(1.15); }
+  button:disabled { opacity: 0.35; }
 }
-button:active:not(:disabled) { transform: scale(0.95); filter: brightness(1.15); }
-button:disabled { opacity: 0.35; }
 .actions { display: flex; gap: 12px; margin-top: 16px; }
 .actions button { flex: 1; font-size: 1.05rem; font-weight: 600; }
 .primary { width: 100%; padding: 20px; border-radius: 22px; font-size: 1.15rem; font-weight: 700; background: var(--grad); box-shadow: 0 8px 24px rgba(99, 102, 241, 0.35); }
