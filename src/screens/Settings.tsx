@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { connect, disconnect, isConnected } from '../cloud/dropbox';
+import { getCloudSyncedAt, restoreFromCloud, syncNow } from '../cloud/sync';
 import { saveBackup } from '../db/backup-file';
 import {
   clearUndoBackup,
@@ -11,7 +13,7 @@ import {
   updateSettings,
 } from '../db/repo';
 import { summarizeBackup } from '../domain/backup.ts';
-import type { Settings as SettingsData } from '../types';
+import type { Backup, Settings as SettingsData } from '../types';
 import { APP_VERSION } from '../version';
 
 const DAY_MS = 86_400_000;
@@ -28,6 +30,9 @@ export function Settings() {
   const [update, setUpdate] = useState<{ status: string; ready?: ServiceWorker }>();
   const [checking, setChecking] = useState(false);
   const [persisted, setPersisted] = useState<boolean>();
+  const [connected, setConnected] = useState(isConnected());
+  const [cloudAt, setCloudAt] = useState(getCloudSyncedAt());
+  const [cloudBusy, setCloudBusy] = useState(false);
 
   useEffect(() => {
     getSettings().then(setSettings);
@@ -79,29 +84,71 @@ export function Settings() {
 
   // Antes de reemplazar: muestra qué trae el archivo frente a lo que hay ahora, y guarda
   // una copia de lo actual para poder deshacer.
+  // Confirma con el resumen, guarda una copia de lo actual y reemplaza. Lo usan el archivo y Dropbox.
+  async function applyBackup(backup: Backup) {
+    const incoming = summarizeBackup(backup.workouts);
+    const current = summarizeBackup((await exportBackup()).workouts);
+    const ok = confirm(
+      `Respaldo del ${dateOf(backup.exportedAt)}:\n` +
+        `• ${incoming.finished} sesiones terminadas` +
+        (incoming.lastFinishedAt ? ` (la última: ${dateOf(incoming.lastFinishedAt)})` : '') +
+        `\n\nEn este teléfono ahora hay ${current.finished} sesiones terminadas.\n\n` +
+        'Se guardará una copia de lo actual y podrás deshacerlo. ¿Reemplazar todo?',
+    );
+    if (!ok) return;
+    await saveUndoBackup();
+    await importBackup(backup);
+    setSettings(await getSettings());
+    alert('Respaldo importado. Puedes deshacerlo abajo.');
+  }
+
   async function importData(input: HTMLInputElement) {
     const file = input.files?.[0];
     input.value = ''; // permite volver a elegir el mismo archivo
     if (!file) return;
     try {
-      const backup = parseBackup(JSON.parse(await file.text()));
-      const incoming = summarizeBackup(backup.workouts);
-      const current = summarizeBackup((await exportBackup()).workouts);
-      const ok = confirm(
-        `Respaldo del ${dateOf(backup.exportedAt)}:\n` +
-          `• ${incoming.finished} sesiones terminadas` +
-          (incoming.lastFinishedAt ? ` (la última: ${dateOf(incoming.lastFinishedAt)})` : '') +
-          `\n\nEn este teléfono ahora hay ${current.finished} sesiones terminadas.\n\n` +
-          'Se guardará una copia de lo actual y podrás deshacerlo. ¿Reemplazar todo?',
-      );
-      if (!ok) return;
-      await saveUndoBackup();
-      await importBackup(backup);
-      setSettings(await getSettings());
-      alert('Respaldo importado. Puedes deshacerlo abajo.');
+      await applyBackup(parseBackup(JSON.parse(await file.text())));
     } catch (e) {
       alert(e instanceof SyntaxError ? 'El archivo no es un JSON válido.' : (e as Error).message);
     }
+  }
+
+  async function connectDropbox() {
+    try {
+      await connect();
+    } catch {
+      alert('No se pudo abrir Dropbox.');
+    }
+  }
+
+  async function syncDropbox() {
+    setCloudBusy(true);
+    try {
+      const at = await syncNow();
+      if (at) setCloudAt(at);
+      else alert('Aún no tienes sesiones terminadas para subir.');
+    } catch (e) {
+      alert((e as Error).message);
+    } finally {
+      setCloudBusy(false);
+    }
+  }
+
+  async function restoreDropbox() {
+    setCloudBusy(true);
+    try {
+      await applyBackup(await restoreFromCloud());
+    } catch (e) {
+      alert((e as Error).message);
+    } finally {
+      setCloudBusy(false);
+    }
+  }
+
+  function disconnectDropbox() {
+    if (!confirm('¿Desconectar Dropbox? Tus datos del teléfono no se borran.')) return;
+    disconnect();
+    setConnected(false);
   }
 
   async function undoImport() {
@@ -173,6 +220,30 @@ export function Settings() {
           </button>
         )}
         <p className="hint">Importar reemplaza todos los datos actuales de este teléfono.</p>
+      </div>
+
+      <div className="card">
+        <p className="label">Copia en Dropbox</p>
+        {connected ? (
+          <>
+            <p className="big-text">Conectado</p>
+            <p className="hint">
+              {cloudAt ? `Última copia en la nube: ${new Date(cloudAt).toLocaleString('es')}` : 'Aún no hay copia en la nube.'}
+            </p>
+            <button className="primary" disabled={cloudBusy} onClick={syncDropbox}>
+              {cloudBusy ? 'Un momento…' : 'Subir copia ahora'}
+            </button>
+            <button className="file-button" disabled={cloudBusy} onClick={restoreDropbox}>
+              Restaurar desde Dropbox
+            </button>
+            <button className="link" onClick={disconnectDropbox}>Desconectar</button>
+          </>
+        ) : (
+          <>
+            <p className="hint">Se sube sola al abrir la app después de terminar una sesión.</p>
+            <button className="primary" onClick={connectDropbox}>Conectar Dropbox</button>
+          </>
+        )}
       </div>
 
       <div className="card">

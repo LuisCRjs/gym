@@ -7,6 +7,7 @@ import {
   getSettings,
   startWorkout,
 } from '../db/repo';
+import { autoSync } from '../cloud/sync';
 import { saveBackup } from '../db/backup-file';
 import { backupIsStale } from '../domain/backup.ts';
 import { isDeloadWeek, planWeek, todayISO } from '../domain/plan-week.ts';
@@ -38,6 +39,8 @@ export function Home({ onOpenMeasurements, onOpenSession }: Props) {
     Promise.all([getSettings(), getLastFinishedWorkout(), getInProgressWorkout()]).then(
       ([settings, last, inProgress]) => setData({ settings, last, inProgress }),
     );
+    // Al volver de una sesión, sube la copia a Dropbox si hay una nueva (no bloquea la pantalla).
+    autoSync();
   }, []);
 
   if (!data) return null;
