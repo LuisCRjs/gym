@@ -227,25 +227,27 @@ export function Session({ workoutId, onExit }: { workoutId: string; onExit: () =
         </button>
       </div>
 
-      {rest && (
-        <RestTimer
-          endsAt={rest.endsAt}
-          totalSec={rest.totalSec}
-          hidden={restHidden}
-          onHide={() => setRestHidden(true)}
-          onShow={() => setRestHidden(false)}
-          onClose={() => setRest(undefined)}
-        />
-      )}
-
-      <div className="actions">
-        <button disabled={idx === 0} onClick={() => setIdx(idx - 1)}>← Anterior</button>
-        {isLast ? (
-          <button className="primary" onClick={finish}>Terminar sesión</button>
-        ) : (
-          <button className="primary" onClick={() => setIdx(idx + 1)}>Siguiente →</button>
+      {/* Pie fijo: el temporizador (si está oculto) va encima de Anterior/Siguiente, nunca sobre ellos. */}
+      <footer className="session-footer">
+        {rest && (
+          <RestTimer
+            endsAt={rest.endsAt}
+            totalSec={rest.totalSec}
+            hidden={restHidden}
+            onHide={() => setRestHidden(true)}
+            onShow={() => setRestHidden(false)}
+            onClose={() => setRest(undefined)}
+          />
         )}
-      </div>
+        <div className="actions">
+          <button disabled={idx === 0} onClick={() => setIdx(idx - 1)}>← Anterior</button>
+          {isLast ? (
+            <button className="primary" onClick={finish}>Terminar sesión</button>
+          ) : (
+            <button className="primary" onClick={() => setIdx(idx + 1)}>Siguiente →</button>
+          )}
+        </div>
+      </footer>
     </section>
   );
 }

@@ -29,7 +29,7 @@ export function App() {
   if (firstRun === undefined) return null;
   if (firstRun) {
     return (
-      <main>
+      <main className="scroll">
         <Welcome onDone={() => setFirstRun(false)} />
       </main>
     );
@@ -38,7 +38,7 @@ export function App() {
   // La sesión ocupa toda la pantalla (sin navegación inferior).
   if (sessionId) {
     return (
-      <main>
+      <main className="scroll scroll--session">
         <Session workoutId={sessionId} onExit={() => setSessionId(undefined)} />
       </main>
     );
@@ -47,7 +47,7 @@ export function App() {
   return (
     <>
       {/* key = tab: al cambiar de pestaña la pantalla se vuelve a montar y entra con animación */}
-      <main key={tab}>
+      <main key={tab} className="scroll">
         {tab === 'home' ? (
           <Home onOpenMeasurements={() => setTab('measurements')} onOpenSession={setSessionId} />
         ) : tab === 'measurements' ? (
