@@ -9,7 +9,8 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'autoUpdate',
+      // 'prompt': la versión nueva espera a que el usuario toque "Actualizar" (ver UpdatePrompt).
+      registerType: 'prompt',
       includeAssets: ['plan.json', 'apple-touch-icon.png'],
       manifest: {
         name: 'Gym Tracker',

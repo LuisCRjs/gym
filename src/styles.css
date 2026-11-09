@@ -217,6 +217,18 @@ input.switch:checked::after { transform: translateX(20px); }
 .steps li:last-child { margin-bottom: 0; }
 .steps li::marker { color: var(--blue); font-weight: 800; }
 
+/* ---------- Aviso de nueva versión ---------- */
+/* Flotante arriba: no ocupa espacio en el layout, así no mueve la sesión ni la navegación. */
+.update-prompt {
+  position: fixed; z-index: 20; top: calc(12px + env(safe-area-inset-top)); left: 16px; right: 16px;
+  max-width: 488px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 12px 14px; border-radius: 22px; background: var(--card-2); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  animation: rise 0.3s var(--ease) both;
+}
+.update-prompt p { font-size: 0.95rem; font-weight: 600; }
+.update-prompt div { display: flex; gap: 8px; }
+.update-prompt .pill { padding: 8px 14px; font-size: 0.9rem; }
+
 /* ---------- Navegación inferior flotante ---------- */
 nav {
   flex: none; position: relative; z-index: 5; width: calc(100% - 32px); max-width: 488px; margin: 0 auto calc(10px + env(safe-area-inset-bottom));
