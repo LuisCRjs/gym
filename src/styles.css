@@ -217,6 +217,8 @@ input.switch:checked::after { transform: translateX(20px); }
 .steps li:last-child { margin-bottom: 0; }
 .steps li::marker { color: var(--blue); font-weight: 800; }
 
+.app-version { margin-top: 24px; text-align: center; color: var(--muted); font-size: 0.8rem; }
+
 /* ---------- Aviso de nueva versión ---------- */
 /* Flotante arriba: no ocupa espacio en el layout, así no mueve la sesión ni la navegación. */
 .update-prompt {
