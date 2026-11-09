@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Ring } from './Ring';
 
 interface Props {
@@ -32,7 +33,9 @@ export function RestTimer({ endsAt, totalSec, hidden, onHide, onShow, onClose }:
     );
   }
 
-  return (
+  // Se monta en <body>: dentro de la sesión, una transformación de la sección haría que
+  // "pantalla completa" se quedara del ancho de la sesión.
+  return createPortal(
     <div className={finished ? 'timer finished' : 'timer'}>
       <Ring
         value={leftMs / (totalSec * 1000)}
@@ -55,6 +58,7 @@ export function RestTimer({ endsAt, totalSec, hidden, onHide, onShow, onClose }:
           </>
         )}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
